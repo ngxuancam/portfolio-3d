@@ -87,6 +87,10 @@ npm run build    # every route prerenders as static
 
 Set `NEXT_PUBLIC_SITE_URL` before deploying so canonical URLs, the sitemap and JSON-LD point at the real domain.
 
+## License
+
+[Apache License 2.0](LICENSE)
+
 ---
 
 <div align="center">
