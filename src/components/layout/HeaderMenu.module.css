@@ -1,0 +1,104 @@
+/* desktop: no toggle, the nav sits inline in the capsule */
+.menu-toggle {
+  display: none;
+}
+
+.menu-panel {
+  display: contents;
+}
+
+@media (max-width: 760px) {
+  /* three brass-ink bars that fold into an X */
+  .menu-toggle {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin-left: auto;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .menu-toggle__bar {
+    position: absolute;
+    width: 1.25rem;
+    height: 1.5px;
+    border-radius: 1px;
+    background: var(--oxford-navy);
+    transition:
+      translate 0.45s var(--ease-out-expo),
+      rotate 0.45s var(--ease-out-expo),
+      opacity 0.25s,
+      scale 0.35s var(--ease-out-expo);
+  }
+
+  .menu-toggle__bar:nth-child(1) {
+    translate: 0 -0.38rem;
+  }
+
+  .menu-toggle__bar:nth-child(3) {
+    translate: 0 0.38rem;
+  }
+
+  .menu-toggle[data-open="true"] .menu-toggle__bar:nth-child(1) {
+    translate: 0 0;
+    rotate: 45deg;
+  }
+
+  .menu-toggle[data-open="true"] .menu-toggle__bar:nth-child(2) {
+    opacity: 0;
+    scale: 0 1;
+  }
+
+  .menu-toggle[data-open="true"] .menu-toggle__bar:nth-child(3) {
+    translate: 0 0;
+    rotate: -45deg;
+  }
+
+  /*
+   * drop-down panel: flat ecru card with a brass micro-border, aligned under the capsule.
+   * Absolute (not fixed): the capsule's backdrop-filter makes it the containing block
+   * for fixed descendants anyway, so anchor to it explicitly.
+   */
+  .menu-panel {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    right: 0;
+    display: block;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid var(--brass);
+    border-radius: var(--radius-lg);
+    background: var(--ecru);
+    opacity: 0;
+    visibility: hidden;
+    translate: 0 -0.75rem;
+    /* closing: stay visible until the fade ends */
+    transition:
+      opacity 0.35s,
+      translate 0.5s var(--ease-out-expo),
+      visibility 0s 0.35s;
+  }
+
+  .menu-panel[data-open="true"] {
+    opacity: 1;
+    visibility: visible;
+    translate: 0 0;
+    /* opening: visible immediately, so focus can move into the links */
+    transition:
+      opacity 0.35s,
+      translate 0.5s var(--ease-out-expo),
+      visibility 0s;
+  }
+}
+
+@media (max-width: 760px) and (prefers-reduced-motion: reduce) {
+  .menu-toggle__bar,
+  .menu-panel {
+    transition: none;
+  }
+}

@@ -1,0 +1,143 @@
+.projects {
+  padding-top: var(--space-section);
+  border-top: 1px solid var(--color-line);
+}
+
+.projects__viewport {
+  overflow: hidden;
+  perspective: 1400px;
+}
+
+.projects__track {
+  display: flex;
+  gap: clamp(1.25rem, 2.5vw, 2rem);
+  width: max-content;
+  padding: 6rem max(var(--space-gutter), (100vw - var(--width-content)) / 2) var(--space-section);
+  will-change: transform;
+}
+
+.projects__card {
+  --card-accent: var(--deep-burgundy);
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+  width: clamp(18rem, 34vw, 29rem);
+  padding: clamp(1.5rem, 2.5vw, 2.25rem);
+  border-radius: var(--radius-lg);
+  transform-style: preserve-3d;
+}
+
+.projects__card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.72rem;
+  letter-spacing: var(--tracking-label);
+  color: var(--color-text-faint);
+}
+
+.projects__card-index {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+  color: var(--brass-ink);
+}
+
+.projects__card-year {
+  font-family: var(--font-script);
+  font-size: 1.35rem;
+  letter-spacing: 0;
+  color: var(--deep-burgundy);
+}
+
+/* flat colour plate with a single monogram — architectural, not glossy */
+.projects__card-art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 10;
+  border: 1px solid var(--color-line);
+  border-radius: calc(var(--radius-lg) - 0.5rem);
+  overflow: hidden;
+  background: var(--card-accent);
+}
+
+.projects__card-art::after {
+  content: "";
+  position: absolute;
+  inset: 0.75rem;
+  border: 1px solid rgb(253 251 247 / 0.35);
+  border-radius: calc(var(--radius-lg) - 1rem);
+}
+
+.projects__card-glyph {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(5rem, 10vw, 7.5rem);
+  line-height: 1;
+  color: var(--ecru);
+  transition: transform 0.8s var(--ease-out-expo);
+}
+
+.projects__card:hover .projects__card-glyph {
+  transform: scale(1.08);
+}
+
+.projects__card-title {
+  margin-top: 0.5rem;
+  font-size: clamp(1.9rem, 3vw, 2.4rem);
+  line-height: 1;
+}
+
+.projects__card-tagline {
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--deep-burgundy);
+}
+
+.projects__card-text {
+  color: var(--color-text-muted);
+}
+
+.projects__card-outcome {
+  padding: 0.8rem 1rem;
+  border-left: 1px solid var(--brass);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.15rem;
+  color: var(--oxford-navy);
+}
+
+.projects__card-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.projects__card-stack li {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+}
+
+/* narrow / touch: native horizontal swipe with snap instead of the pinned scroller */
+@media (max-width: 959px) {
+  .projects__viewport {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .projects__card {
+    width: min(82vw, 24rem);
+    scroll-snap-align: center;
+  }
+}

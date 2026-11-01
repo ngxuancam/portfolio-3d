@@ -1,0 +1,87 @@
+/* bottom-left pill: ecru, brass hairline, small caps — mirrors the back-to-top button */
+.loupe {
+  position: fixed;
+  left: clamp(1rem, 3vw, 2rem);
+  bottom: clamp(1rem, 3vw, 2rem);
+  z-index: 60;
+  display: none;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.6rem 0.5rem 0.85rem;
+  border: 1px solid var(--brass);
+  border-radius: var(--radius-pill);
+  background: var(--ecru);
+  color: var(--oxford-navy);
+  font: inherit;
+  cursor: pointer;
+  /* rides above the footer — --footer-lift is set by the back-to-top button */
+  translate: 0 calc(-1 * var(--footer-lift, 0px));
+}
+
+/* the loupe only exists where there is a fine pointer to carry it */
+@media (pointer: fine) {
+  .loupe {
+    display: inline-flex;
+  }
+}
+
+.loupe__icon {
+  width: 1rem;
+  height: 1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.loupe__label {
+  font-size: 0.68rem;
+  font-weight: 400;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+/* switch: parchment track, knob slides right and turns burgundy when on */
+.loupe__track {
+  position: relative;
+  width: 2rem;
+  height: 1.1rem;
+  border: 1px solid var(--brass);
+  border-radius: var(--radius-pill);
+  background: var(--parchment-line);
+  transition: background-color 0.3s;
+}
+
+.loupe__knob {
+  position: absolute;
+  top: 50%;
+  left: 0.15rem;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: var(--brass-ink);
+  translate: 0 -50%;
+  transition:
+    translate 0.35s var(--ease-out-expo),
+    background-color 0.3s;
+}
+
+.loupe[data-state="on"] .loupe__track {
+  background: var(--ecru-deep);
+}
+
+.loupe[data-state="on"] .loupe__knob {
+  translate: 0.9rem -50%;
+  background: var(--deep-burgundy);
+}
+
+.loupe:hover {
+  color: var(--deep-burgundy);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loupe__track,
+  .loupe__knob {
+    transition: none;
+  }
+}

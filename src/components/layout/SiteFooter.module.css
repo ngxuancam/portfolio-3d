@@ -1,0 +1,28 @@
+.site-footer {
+  border-top: 1px solid var(--brass);
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+.site-footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem 2rem;
+  padding-block: 2.5rem;
+}
+
+.site-footer__meta {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.site-footer__meta time {
+  font-family: var(--font-script);
+  font-size: 1.15rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--deep-burgundy);
+}

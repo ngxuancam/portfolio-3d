@@ -1,0 +1,277 @@
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: grid;
+  align-items: center;
+  isolation: isolate;
+  overflow: clip;
+}
+
+/*
+ * Poster placement measured on the capture (412×915 viewport): the bust spans
+ * 6.487%–50.44% of the viewport height, centred horizontally. The narrow camera has a
+ * fixed vertical field of view, so these vh-based numbers hold on any phone.
+ */
+.hero__poster {
+  display: none;
+}
+
+@media (max-aspect-ratio: 11/10) {
+  .hero__poster {
+    display: block;
+    position: absolute;
+    top: 6.487svh;
+    left: 50%;
+    z-index: 0;
+    height: 43.95svh;
+    translate: -50% 0;
+    pointer-events: none;
+    transition: opacity 0.6s var(--ease-out-expo);
+  }
+
+  .hero__poster img {
+    width: auto;
+    height: 100%;
+    max-width: none;
+  }
+
+  :global(html[data-stage="ready"]) .hero__poster {
+    opacity: 0;
+  }
+}
+
+.hero__inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 1.75rem;
+  padding-block: 9rem 7rem;
+  pointer-events: none;
+}
+
+.hero__inner a {
+  pointer-events: auto;
+}
+
+.hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.5rem;
+}
+
+.hero__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--oxford-navy);
+}
+
+.hero__status-dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--deep-burgundy);
+}
+
+.hero__tagline {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.hero__title {
+  max-width: 11ch;
+  /* transform only (never opacity), so the headline counts as painted at first paint */
+  animation: hero-title-in 1.4s var(--ease-out-expo) both;
+  font-size: clamp(3.8rem, 10.5vw, 9.4rem);
+  font-weight: 500;
+  line-height: 0.92;
+  letter-spacing: var(--tracking-display);
+}
+
+/* staggered entrance for the supporting copy; --i is the order */
+.hero__enter {
+  animation: hero-rise 1.1s var(--ease-out-expo) both;
+  animation-delay: calc(0.15s + var(--i, 0) * 0.1s);
+}
+
+@keyframes hero-title-in {
+  from {
+    transform: translateY(0.35em);
+  }
+}
+
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+}
+
+.hero__role {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.9rem;
+  font-size: 0.74rem;
+  font-weight: 400;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--deep-burgundy);
+}
+
+.hero__role-sep {
+  width: 1.75rem;
+  height: 1px;
+  background: var(--brass);
+}
+
+.hero__lead {
+  max-width: 30rem;
+  font-size: clamp(1.1rem, 1.6vw, 1.3rem);
+  color: var(--color-text-muted);
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.hero__button {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.95rem 1.9rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--oxford-navy);
+  transition:
+    color 0.4s,
+    background-color 0.4s;
+}
+
+.hero__button:hover {
+  color: var(--deep-burgundy);
+}
+
+/* flat colour block — no gradient, no shadow */
+.hero__button--primary {
+  border: 1px solid var(--deep-burgundy);
+  background: var(--deep-burgundy);
+  color: var(--ecru);
+}
+
+.hero__button--primary:hover {
+  background: var(--deep-burgundy-hover);
+  color: var(--ecru);
+}
+
+.hero__scroll-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 2.25rem;
+  z-index: 1;
+  width: 1px;
+  height: 4.5rem;
+  overflow: hidden;
+  background: var(--parchment-line);
+}
+
+.hero__scroll-line {
+  position: absolute;
+  inset: 0;
+  background: var(--brass);
+  animation: hero-scroll 2.4s var(--ease-out-expo) infinite;
+}
+
+@keyframes hero-scroll {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@media (max-width: 960px) {
+  /*
+ * Poster placement measured on the capture (412×915 viewport): the bust spans
+ * 6.487%–50.44% of the viewport height, centred horizontally. The narrow camera has a
+ * fixed vertical field of view, so these vh-based numbers hold on any phone.
+ */
+.hero__poster {
+  display: none;
+}
+
+@media (max-aspect-ratio: 11/10) {
+  .hero__poster {
+    display: block;
+    position: absolute;
+    top: 6.487svh;
+    left: 50%;
+    z-index: 0;
+    height: 43.95svh;
+    translate: -50% 0;
+    pointer-events: none;
+    transition: opacity 0.6s var(--ease-out-expo);
+  }
+
+  .hero__poster img {
+    width: auto;
+    height: 100%;
+    max-width: none;
+  }
+
+  :global(html[data-stage="ready"]) .hero__poster {
+    opacity: 0;
+  }
+}
+
+.hero__inner {
+    align-self: end;
+    padding-block: 50svh 4rem;
+  }
+}
+
+/*
+ * As the hero scrolls away, its copy drifts up and fades behind the bursting bust —
+ * a CSS view timeline on the hero section (exit 0% → 70% ≈ "top top" → "70% top").
+ */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .hero {
+      view-timeline: --hero block;
+    }
+
+    .hero__inner {
+      animation: hero-copy-out linear both;
+      animation-timeline: --hero;
+      animation-range: exit 0% exit 70%;
+    }
+  }
+}
+
+@keyframes hero-copy-out {
+  to {
+    opacity: 0;
+    transform: translateY(-140px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__scroll-line,
+  .hero__title,
+  .hero__enter {
+    animation: none;
+  }
+}

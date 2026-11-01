@@ -1,0 +1,48 @@
+.section-header {
+  display: grid;
+  gap: 1.5rem;
+  max-width: 50rem;
+  margin-bottom: clamp(3.5rem, 8vw, 6rem);
+}
+
+.section-header__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+/* ornamental index: brass numeral set off by a hairline rule */
+.section-header__index {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: var(--brass-ink);
+}
+
+.section-header__index::after {
+  content: "";
+  width: 2.5rem;
+  height: 1px;
+  background: var(--brass);
+}
+
+.section-header__title {
+  font-size: clamp(2.8rem, 6.2vw, 5.2rem);
+  line-height: 1.02;
+}
+
+.section-header__lead {
+  max-width: 38rem;
+  font-size: clamp(1.05rem, 1.4vw, 1.2rem);
+  color: var(--color-text-muted);
+}

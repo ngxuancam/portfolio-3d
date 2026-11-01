@@ -1,0 +1,316 @@
+/* ───────────── Design system — Old Money · Quiet Luxury ─────────────
+ * Navy grounds, burgundy deepens, warm neutrals carry the page. No bright white,
+ * no neon, no glossy gradients: flat architectural colour blocks, 1px brass
+ * micro-borders, generous whitespace and a faint linen grain for a printed feel.
+ */
+:root {
+  /* palette */
+  --oxford-navy: #1b2430;
+  --oxford-navy-soft: #3a4452;
+  --deep-burgundy: #4a0e17;
+  --deep-burgundy-hover: #5e1520;
+  --ecru: #fdfbf7;
+  --ecru-deep: #f5f0e6;
+  --parchment-line: #eae5db;
+  --brass: #c2a679;
+  --brass-deep: #9c8256;
+  /* brass dark enough for small text on ecru (5.6:1, WCAG AA) */
+  --brass-ink: #7a6340;
+
+  /* semantic roles */
+  --color-bg: var(--ecru);
+  --color-surface: var(--ecru-deep);
+  --color-text: var(--oxford-navy);
+  --color-text-muted: #545c68;
+  --color-text-faint: #8a8f96;
+  --color-primary: var(--deep-burgundy);
+  --color-on-primary: var(--ecru);
+  --color-accent: var(--brass);
+  --color-line: var(--parchment-line);
+  --color-line-brass: var(--brass);
+
+  /* glass — optical only: refraction + a hairline brass rim, no tint gradients or gloss */
+  --light-angle: 135deg; /* follows the pointer, so the rim glint travels with the "light" */
+  --glass-bg: rgb(253 251 247 / 0.42);
+  --glass-filter: blur(1.5px) saturate(115%);
+
+  /* type */
+  --font-display: var(--font-cormorant), "Cormorant Garamond", "Bodoni Moda", Georgia, serif;
+  --font-sans: var(--font-inter), "Inter", system-ui, sans-serif;
+  --font-script: var(--font-pinyon), "Pinyon Script", cursive;
+  --tracking-display: 0.01em;
+  --tracking-label: 0.22em;
+
+  /* layout */
+  --space-gutter: clamp(1.25rem, 5vw, 4rem);
+  --space-section: clamp(7rem, 16vw, 13rem);
+  --width-content: 74rem;
+  --radius-lg: 1.5rem;
+  --radius-pill: 999px;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  color-scheme: light;
+}
+
+/* ───────────── Base ───────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  scroll-padding-top: 6rem;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* clip (not hidden) so no scroll container is created — ScrollTrigger pins keep working */
+main {
+  overflow-x: clip;
+}
+
+/* paper grain + riso specks: a static generated layer, see components/ui/PaperGrain.tsx */
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: var(--tracking-display);
+  color: var(--oxford-navy);
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+::selection {
+  background: var(--deep-burgundy);
+  color: var(--ecru);
+}
+
+:focus-visible {
+  outline: 1px solid var(--deep-burgundy);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+/* the loupe replaces the native cursor once it is live — unless switched off */
+@media (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  html[data-cursor="ready"]:not([data-loupe="off"]),
+  html[data-cursor="ready"]:not([data-loupe="off"]) a,
+  html[data-cursor="ready"]:not([data-loupe="off"]) button {
+    cursor: none;
+  }
+}
+
+/* ───────────── Liquid Glass (quiet) ─────────────
+ * The WebGL canvas is a fixed layer behind the page, so glass samples the live 3D scene.
+ * Kept optical and flat: no tinted gradients, no gloss — light refraction plus a hairline
+ * brass rim whose bright point follows the pointer.
+ *  - .u-glass            clear glass, for small controls only (nav, buttons, chips) —
+ *                        backdrop filters re-run every frame over the animated canvas,
+ *                        so large content panels use the flat .u-card instead
+ *  - .u-glass--refract   Chromium only: edge lensing
+ *  - .u-glass--lens      Chromium only: magnifying lens for small controls
+ *  Both read a per-element SVG filter from --glass-url (components/ui/GlassLensManager.tsx);
+ *  until it is set, the var() falls back to nothing and plain blur applies.
+ */
+/* :where() keeps specificity at zero so a component's own position always wins */
+:where(.u-glass) {
+  position: relative;
+}
+
+.u-glass {
+  isolation: isolate;
+  border: 1px solid transparent;
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-filter);
+  backdrop-filter: var(--glass-filter);
+}
+
+/* hairline brass rim; the brighter arc rotates toward the pointer */
+.u-glass::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    var(--light-angle),
+    var(--brass) 0%,
+    rgb(194 166 121 / 0.55) 30%,
+    rgb(194 166 121 / 0.55) 70%,
+    var(--brass-deep) 100%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  pointer-events: none;
+}
+
+/* without SVG refraction, clear glass needs more blur to stay legible */
+html:not(.is-chromium) .u-glass {
+  -webkit-backdrop-filter: blur(8px) saturate(110%);
+  backdrop-filter: blur(8px) saturate(110%);
+}
+
+html.is-chromium .u-glass--refract {
+  backdrop-filter: var(--glass-url,) var(--glass-filter);
+}
+
+html.is-chromium .u-glass--lens {
+  backdrop-filter: var(--glass-url,) var(--glass-filter);
+}
+
+/* ───────────── Cards ─────────────
+ * Content modules: flat warm cream with a 1px parchment micro-border — no backdrop
+ * filter, no shadow. The stage behind shows through only faintly. Cheap to composite,
+ * so scrolling stays at 60fps over the animated canvas.
+ */
+.u-card {
+  position: relative;
+  border: 1px solid var(--parchment-line);
+  background: rgb(253 251 247 / 0.93);
+}
+
+/* ───────────── Scroll reveals ─────────────
+ * `data-reveal="rise|fade|scale|slideLeft|slideRight"` animates an element in as it
+ * enters the viewport, with a CSS scroll-driven timeline: no JavaScript, no scroll
+ * listeners, transform + opacity only (run on the compositor). Browsers without
+ * scroll timelines, and reduced-motion users, simply see the content.
+ */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    [data-reveal] {
+      animation: reveal-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+    }
+
+    [data-reveal="fade"] {
+      animation-name: reveal-fade;
+    }
+
+    [data-reveal="scale"] {
+      animation-name: reveal-scale;
+    }
+
+    [data-reveal="slideLeft"] {
+      animation-name: reveal-slide-left;
+    }
+
+    [data-reveal="slideRight"] {
+      animation-name: reveal-slide-right;
+    }
+  }
+}
+
+@keyframes reveal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(3rem);
+  }
+}
+
+@keyframes reveal-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes reveal-scale {
+  from {
+    opacity: 0;
+    transform: translateY(1.5rem) scale(0.92);
+  }
+}
+
+@keyframes reveal-slide-left {
+  from {
+    opacity: 0;
+    transform: translateX(4rem);
+  }
+}
+
+@keyframes reveal-slide-right {
+  from {
+    opacity: 0;
+    transform: translateX(-4rem);
+  }
+}
+
+/* ───────────── Editorial primitives ───────────── */
+/* small-caps label, e.g. section eyebrows */
+.u-label {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 0.72rem;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+/* script flourish — strictly for tiny metadata, dates and decorative taglines */
+.u-script {
+  font-family: var(--font-script);
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--deep-burgundy);
+}
+
+/* ───────────── Utilities ───────────── */
+.u-container {
+  width: min(100% - 2 * var(--space-gutter), var(--width-content));
+  margin-inline: auto;
+}
+
+.u-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

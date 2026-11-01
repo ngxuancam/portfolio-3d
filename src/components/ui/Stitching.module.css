@@ -1,0 +1,36 @@
+/* the seam sits on top of the card's content box but never intercepts pointer events */
+.stitching {
+  --stitch-inset: 9px;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.stitching__holes,
+.stitching__thread {
+  x: var(--stitch-inset);
+  y: var(--stitch-inset);
+  width: calc(100% - 2 * var(--stitch-inset));
+  height: calc(100% - 2 * var(--stitch-inset));
+  rx: calc(var(--radius-lg) - var(--stitch-inset));
+  fill: none;
+  stroke-linecap: round;
+  /* short stitch, slightly shorter gap — hand-sewn saddle stitch rhythm */
+  stroke-dasharray: 6 4.5;
+}
+
+/* needle holes: the shadow each stitch casts into the leather */
+.stitching__holes {
+  translate: 0 1px;
+  stroke: rgb(27 36 48 / 0.18);
+  stroke-width: 1.8;
+}
+
+/* waxed brass thread */
+.stitching__thread {
+  stroke: var(--brass);
+  stroke-width: 1.4;
+}

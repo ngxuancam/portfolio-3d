@@ -1,0 +1,25 @@
+.scene-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  animation: scene-backdrop-in 1.8s 0.2s var(--ease-out-expo) both;
+}
+
+.scene-backdrop__canvas {
+  width: 100%;
+  height: 100%;
+}
+
+/* opacity only — a transform here would shift the canvas away from pointer coordinates */
+@keyframes scene-backdrop-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene-backdrop {
+    animation: none;
+  }
+}

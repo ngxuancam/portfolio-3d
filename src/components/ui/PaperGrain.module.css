@@ -1,0 +1,9 @@
+/* one fixed, static layer over the page — painted once, never animated */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}

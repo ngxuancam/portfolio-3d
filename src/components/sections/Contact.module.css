@@ -1,0 +1,105 @@
+.contact {
+  position: relative;
+  padding-block: var(--space-section);
+  border-top: 1px solid var(--color-line);
+  overflow: clip;
+}
+
+.contact__inner {
+  display: grid;
+  justify-items: center;
+  gap: 2.25rem;
+  text-align: center;
+}
+
+.contact__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.contact__eyebrow span {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: var(--brass-ink);
+}
+
+.contact__title {
+  max-width: 14ch;
+  font-size: clamp(3.2rem, 8.5vw, 7.2rem);
+  line-height: 0.98;
+}
+
+.contact__title-em {
+  font-style: italic;
+  color: var(--deep-burgundy);
+}
+
+/* flat burgundy block, brass hairline on hover — no shadow */
+.contact__mail {
+  display: inline-block;
+  padding: 1.15rem 2.25rem;
+  border: 1px solid var(--deep-burgundy);
+  border-radius: var(--radius-pill);
+  background: var(--deep-burgundy);
+  color: var(--ecru);
+  font-size: clamp(0.95rem, 2vw, 1.2rem);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  word-break: break-all;
+  transition:
+    background-color 0.4s,
+    border-color 0.4s;
+}
+
+.contact__mail:hover {
+  border-color: var(--brass);
+  background: var(--deep-burgundy-hover);
+}
+
+.contact__socials {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 2.25rem;
+}
+
+.contact__social {
+  position: relative;
+  font-size: 0.78rem;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  transition: color 0.3s;
+}
+
+.contact__social::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.3rem;
+  height: 1px;
+  background: var(--brass);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.5s var(--ease-out-expo);
+}
+
+.contact__social:hover {
+  color: var(--deep-burgundy);
+}
+
+.contact__social:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}

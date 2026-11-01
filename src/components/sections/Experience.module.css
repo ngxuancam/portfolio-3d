@@ -1,0 +1,139 @@
+.experience {
+  padding-block: var(--space-section);
+  border-top: 1px solid var(--color-line);
+}
+
+.experience__timeline {
+  position: relative;
+  padding-left: clamp(2rem, 5vw, 4rem);
+}
+
+.experience__list {
+  display: grid;
+  gap: clamp(2.5rem, 5vw, 4rem);
+}
+
+.experience__timeline::before,
+.experience__rail {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0.35rem;
+  width: 1px;
+}
+
+.experience__timeline::before {
+  background: var(--color-line);
+}
+
+.experience__rail {
+  background: var(--brass);
+  transform-origin: top;
+}
+
+/* the brass rail draws itself as the timeline scrolls through — CSS scroll timeline */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .experience__rail {
+      animation: experience-rail linear both;
+      animation-timeline: view();
+      animation-range: cover 10% cover 70%;
+    }
+  }
+}
+
+@keyframes experience-rail {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+.experience__item {
+  position: relative;
+}
+
+.experience__item::before {
+  content: "";
+  position: absolute;
+  top: 2.2rem;
+  left: calc(-1 * clamp(2rem, 5vw, 4rem));
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: var(--ecru);
+  border: 1px solid var(--brass);
+}
+
+.experience__card {
+  display: grid;
+  gap: 1.1rem;
+  max-width: 52rem;
+  padding: clamp(1.75rem, 3vw, 2.5rem);
+  border-radius: var(--radius-lg);
+}
+
+.experience__header {
+  display: grid;
+  gap: 0.4rem;
+}
+
+/* dates are the one place for the script flourish */
+.experience__period {
+  font-family: var(--font-script);
+  font-size: 1.45rem;
+  line-height: 1.2;
+  color: var(--deep-burgundy);
+}
+
+.experience__role {
+  font-size: clamp(1.9rem, 3.4vw, 2.75rem);
+  line-height: 1.05;
+}
+
+.experience__company {
+  font-size: 0.74rem;
+  font-weight: 400;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.experience__summary {
+  color: var(--oxford-navy);
+}
+
+.experience__highlights {
+  display: grid;
+  gap: 0.65rem;
+  color: var(--color-text-muted);
+}
+
+.experience__highlights li {
+  position: relative;
+  padding-left: 1.6rem;
+}
+
+.experience__highlights li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.85em;
+  width: 0.8rem;
+  height: 1px;
+  background: var(--brass);
+}
+
+.experience__stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.experience__stack li {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill);
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}

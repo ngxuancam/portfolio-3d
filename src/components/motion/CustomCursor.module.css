@@ -1,0 +1,74 @@
+/* outer: follows the pointer (its centre is the hotspot) */
+.cursor__lens {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  width: 5.5rem;
+  height: 5.5rem;
+  pointer-events: none;
+  visibility: hidden;
+  will-change: transform;
+}
+
+/* the glass: refracts DOM and WebGL beneath it; elastic size on hover/press */
+.cursor__glass {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  translate: -50% -50%;
+  -webkit-backdrop-filter: blur(0.4px) saturate(120%);
+  backdrop-filter: blur(0.4px) saturate(120%);
+  /* faint specular sheen on the glass itself */
+  background: radial-gradient(60% 45% at 32% 26%, rgb(255 255 255 / 0.22), transparent 70%);
+}
+
+:global(html.is-chromium) .cursor__glass {
+  backdrop-filter: var(--glass-url,) saturate(120%);
+}
+
+/*
+ * Photographed loupe frame, positioned in % of the glass so it follows the elastic size.
+ * Measured on the source image (1007×1562): ring centre (493.5, 350.5), inner radius 312.
+ * The glass (100%) spans the ring's inner diameter (624 px), so:
+ *   width  = 1007 / 624 = 161.4%      height = 1562 / 624 = 250.3%
+ *   left   = 50% − 493.5 / 624        top    = 50% − 350.5 / 624
+ * and it rotates about the ring centre (49.0% / 22.44% of the image).
+ */
+.cursor__frame {
+  position: absolute;
+  left: -29.09%;
+  top: -6.17%;
+  width: 161.4%;
+  height: 250.3%;
+  max-width: none;
+  transform-origin: 49% 22.44%;
+  rotate: -40deg;
+  pointer-events: none;
+  user-select: none;
+  filter: drop-shadow(0 6px 10px rgb(27 36 48 / 0.28));
+}
+
+/* switched off by the visitor (LoupeToggle): hide the loupe, the native cursor returns */
+:global(html[data-loupe="off"]) .cursor__lens,
+:global(html[data-loupe="off"]) .cursor__dot {
+  display: none;
+}
+
+/* precise pointer */
+.cursor__dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 101;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--deep-burgundy);
+  pointer-events: none;
+  visibility: hidden;
+  will-change: transform;
+}
