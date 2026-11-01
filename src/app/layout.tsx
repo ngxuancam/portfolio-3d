@@ -3,6 +3,7 @@ import { createSiteMetadata, siteViewport } from "@/lib/seo/siteMetadata";
 import { SmoothScroll } from "@/components/motion/SmoothScroll";
 import { GlassLensManager } from "@/components/ui/GlassLensManager";
 import { PaperGrain } from "@/components/ui/PaperGrain";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { PointerExtras } from "@/components/motion/PointerExtras";
 import { LOUPE_HEAD_SCRIPT } from "@/lib/animation/loupePreference";
 import { ScrollToTop } from "@/components/motion/ScrollToTop";
@@ -68,6 +69,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <PointerExtras />
         <GlassLensManager />
         <PaperGrain />
+        {/* real-visitor Core Web Vitals, reported to the Vercel dashboard */}
+        <SpeedInsights />
       </body>
     </html>
   );
