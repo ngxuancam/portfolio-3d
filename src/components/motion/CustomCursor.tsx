@@ -39,7 +39,14 @@ export function CustomCursor() {
     mm.add("(pointer: fine) and (prefers-reduced-motion: no-preference)", () => {
       // the art is only requested where the cursor can exist — never on touch devices
       if (frameRef.current && !frameRef.current.srcset) frameRef.current.srcset = FRAME_SRCSET;
-      gsap.set([lens, dot], { xPercent: -50, yPercent: -50, autoAlpha: 1 });
+      // rest in the middle of the screen until the pointer first moves — not stuck in the corner
+      gsap.set([lens, dot], {
+        x: window.innerWidth / 2,
+        y: window.innerHeight / 2,
+        xPercent: -50,
+        yPercent: -50,
+        autoAlpha: 1,
+      });
       // the native cursor is hidden only now that the loupe exists (see globals.css)
       document.documentElement.dataset.cursor = "ready";
       const lensX = gsap.quickTo(lens, "x", { duration: 0.35, ease: "power3" });
