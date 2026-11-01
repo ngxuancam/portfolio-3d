@@ -5,6 +5,8 @@
 **A résumé site where a 3D bust of me dissolves into a particle flower as you scroll.**<br/>
 Next.js 16 · React 19 · Three.js / React Three Fiber · GLSL · anime.js · GSAP · CSS scroll-driven animations
 
+**[nguyenxuancam.com](https://nguyenxuancam.com)**
+
 ![Lighthouse desktop](https://img.shields.io/badge/Lighthouse_desktop-100%20·%20100%20·%20100%20·%20100-1B2430?style=flat-square&labelColor=4A0E17)
 ![Lighthouse mobile](https://img.shields.io/badge/Lighthouse_mobile-a11y%20·%20best%20practices%20·%20SEO%20100-1B2430?style=flat-square&labelColor=4A0E17)
 ![60 fps](https://img.shields.io/badge/scroll-60_fps-1B2430?style=flat-square&labelColor=C2A679)

@@ -43,3 +43,6 @@ next-env.d.ts
 # local-only: original photos/models and agent skills
 /assets/
 /.claude/
+
+.vercel
+.env*
