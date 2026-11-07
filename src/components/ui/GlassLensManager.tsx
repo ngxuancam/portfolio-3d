@@ -109,10 +109,14 @@ function sizeFilter(filter: SVGFilterElement, width: number, height: number, mag
   }
   const base = Math.min(width, height);
   const scale = magnify ? clamp(base * 0.42, 16, 60) : -clamp(base * 0.12, 14, 44);
-  const spread = Math.abs(scale) * 0.035; // red bends least, blue most → a faint, quiet fringe
+  // panels: red bends least, blue most → a faint, quiet fringe at the rim. A magnifier is
+  // read *through*, so it gets no dispersion: colour fringes on every glyph blur the text.
+  const spread = magnify ? 0 : Math.abs(scale) * 0.035;
   filter.querySelectorAll("feDisplacementMap").forEach((shift, i) => {
     shift.setAttribute("scale", String(scale + Math.sign(scale) * spread * i));
   });
+  // just enough smoothing to hide the magnifier's stair-stepping, no more
+  filter.querySelector("feGaussianBlur")?.setAttribute("stdDeviation", magnify ? "0.3" : "0.6");
 }
 
 export function GlassLensManager() {

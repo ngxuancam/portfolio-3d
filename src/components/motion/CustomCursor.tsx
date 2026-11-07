@@ -41,16 +41,18 @@ export function CustomCursor() {
       if (frameRef.current && !frameRef.current.srcset) frameRef.current.srcset = FRAME_SRCSET;
       // rest in the middle of the screen until the pointer first moves — not stuck in the corner
       gsap.set([lens, dot], {
-        x: window.innerWidth / 2,
-        y: window.innerHeight / 2,
+        x: Math.round(window.innerWidth / 2),
+        y: Math.round(window.innerHeight / 2),
         xPercent: -50,
         yPercent: -50,
         autoAlpha: 1,
       });
       // the native cursor is hidden only now that the loupe exists (see globals.css)
       document.documentElement.dataset.cursor = "ready";
-      const lensX = gsap.quickTo(lens, "x", { duration: 0.35, ease: "power3" });
-      const lensY = gsap.quickTo(lens, "y", { duration: 0.35, ease: "power3" });
+      // whole pixels: at a fractional offset the lens resamples what it magnifies every
+      // frame, which reads as blurry text while the loupe glides
+      const lensX = gsap.quickTo(lens, "x", { duration: 0.35, ease: "power3", snap: "x" });
+      const lensY = gsap.quickTo(lens, "y", { duration: 0.35, ease: "power3", snap: "y" });
       const dotX = gsap.quickTo(dot, "x", { duration: 0.06, ease: "power3" });
       const dotY = gsap.quickTo(dot, "y", { duration: 0.06, ease: "power3" });
 

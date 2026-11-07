@@ -54,20 +54,27 @@ export default function OffscreenStage({ reducedMotion, skipIntro, burstCount, o
     };
     worker.onerror = fail;
 
-    send(
-      {
-        type: "init",
-        canvas: offscreen,
-        width: host.clientWidth,
-        height: host.clientHeight,
-        dpr: Math.min(window.devicePixelRatio || 1, STAGE_MAX_DPR),
-        reducedMotion,
-        skipIntro,
-        burstCount,
-        signals: sceneSignals.snapshot(),
-      },
-      [offscreen],
-    );
+    // The worker is only started once the host has a real size: a page opened while its
+    // window is still 0×0 (hidden pane, tab laid out late) would otherwise build the
+    // renderer and camera at 0×0 and never draw.
+    let started = false;
+    const start = (width: number, height: number) => {
+      started = true;
+      send(
+        {
+          type: "init",
+          canvas: offscreen,
+          width,
+          height,
+          dpr: Math.min(window.devicePixelRatio || 1, STAGE_MAX_DPR),
+          reducedMotion,
+          skipIntro,
+          burstCount,
+          signals: sceneSignals.snapshot(),
+        },
+        [offscreen],
+      );
+    };
 
     // scroll / camera / pointer → worker, at most once per frame
     let frame = 0;
@@ -79,13 +86,21 @@ export default function OffscreenStage({ reducedMotion, skipIntro, burstCount, o
       if (!frame) frame = requestAnimationFrame(flush);
     });
 
-    const onResize = () => send({ type: "resize", width: host.clientWidth, height: host.clientHeight });
-    window.addEventListener("resize", onResize);
+    // Follows the host box itself (not just window resizes): catches 0×0 → visible,
+    // scrollbar and layout changes. Zero sizes are never forwarded.
+    const resizeObserver = new ResizeObserver(() => {
+      const width = host.clientWidth;
+      const height = host.clientHeight;
+      if (!width || !height) return;
+      if (!started) start(width, height);
+      else send({ type: "resize", width, height });
+    });
+    resizeObserver.observe(host);
 
     return () => {
       unsubscribe();
       cancelAnimationFrame(frame);
-      window.removeEventListener("resize", onResize);
+      resizeObserver.disconnect();
       worker.terminate();
       canvas.remove();
     };
