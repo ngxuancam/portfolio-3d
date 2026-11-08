@@ -131,6 +131,19 @@ export const resume: Resume = {
   ],
   projects: [
     {
+      id: "onlyfan",
+      name: "OnlyFan",
+      tagline: "Real-time 3D wind simulator",
+      description:
+        "A stand fan, an industrial blower and a smoke machine drive a live 3D fluid solver in a Web Worker. Smoke, wind load and drag play out around an F1 car, a house and a tree.",
+      year: 2026,
+      url: "https://onlyfan.nguyenxuancam.com",
+      repoUrl: "https://github.com/ngxuancam/onlyfan",
+      stack: ["React Three Fiber", "Web Workers", "GLSL", "Next.js"],
+      outcome: "Stable-fluids CFD on an 80×24×40 grid, solved live in the browser",
+      accent: "#b4541a",
+    },
+    {
       id: "orbit",
       name: "Orbit Configurator",
       tagline: "Real-time 3D product builder",

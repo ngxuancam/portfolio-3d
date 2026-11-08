@@ -44,6 +44,20 @@ export function Projects() {
                 <li key={tech}>{tech}</li>
               ))}
             </ul>
+            {(project.url || project.repoUrl) && (
+              <p className={styles["projects__card-links"]}>
+                {project.url && (
+                  <a href={project.url} target="_blank" rel="noopener" aria-label={`${project.name}: live site`}>
+                    Live <span aria-hidden="true">↗</span>
+                  </a>
+                )}
+                {project.repoUrl && (
+                  <a href={project.repoUrl} target="_blank" rel="noopener" aria-label={`${project.name}: source code`}>
+                    Source <span aria-hidden="true">↗</span>
+                  </a>
+                )}
+              </p>
+            )}
           </article>
         ))}
       </HorizontalScroller>

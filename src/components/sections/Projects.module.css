@@ -128,6 +128,28 @@
   color: var(--color-text-muted);
 }
 
+.projects__card-links {
+  display: flex;
+  gap: 1.25rem;
+  margin: 0;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+}
+
+.projects__card-links a {
+  color: var(--oxford-navy);
+  text-decoration: none;
+  border-bottom: 1px solid var(--brass);
+  padding-bottom: 1px;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.projects__card-links a:hover,
+.projects__card-links a:focus-visible {
+  color: var(--brass-ink);
+  border-color: var(--brass-ink);
+}
+
 /* narrow / touch: native horizontal swipe with snap instead of the pinned scroller */
 @media (max-width: 959px) {
   .projects__viewport {
