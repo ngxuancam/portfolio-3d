@@ -1,0 +1,180 @@
+/* Engineering-sheet furniture. Everything here is gated by the theme's --sheet (0 / 1). */
+.sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  color: var(--color-text);
+  font-family: var(--font-script);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: var(--sheet, 0);
+  transition: opacity calc(0.8s * var(--motion-time)) var(--ease);
+}
+
+/* double sheet border, like a drafting-paper margin */
+.sheet__frame {
+  position: absolute;
+  inset: 0.9rem;
+  border: 1px solid var(--color-line);
+}
+
+.sheet__frame::after {
+  content: "";
+  position: absolute;
+  inset: 0.35rem;
+  border: 1px solid color-mix(in srgb, var(--color-line) 55%, transparent);
+}
+
+/* edge rulers: a tick every 12px, a long tick every 120px */
+.sheet__ruler {
+  position: absolute;
+  --tick: color-mix(in srgb, var(--color-text) 45%, transparent);
+}
+
+.sheet__ruler--x {
+  top: 0.9rem;
+  left: 0.9rem;
+  right: 0.9rem;
+  height: 10px;
+  background:
+    repeating-linear-gradient(90deg, var(--tick) 0 1px, transparent 1px 120px) 0 0 / 100% 10px no-repeat,
+    repeating-linear-gradient(90deg, var(--tick) 0 1px, transparent 1px 12px) 0 0 / 100% 5px no-repeat;
+}
+
+.sheet__ruler--y {
+  top: 0.9rem;
+  bottom: 0.9rem;
+  left: 0.9rem;
+  width: 10px;
+  background:
+    repeating-linear-gradient(0deg, var(--tick) 0 1px, transparent 1px 120px) 0 0 / 10px 100% no-repeat,
+    repeating-linear-gradient(0deg, var(--tick) 0 1px, transparent 1px 12px) 0 0 / 5px 100% no-repeat;
+}
+
+/* crosshair registration marks in the four corners */
+.sheet__cross {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  background:
+    linear-gradient(var(--color-text), var(--color-text)) 50% 0 / 1px 100% no-repeat,
+    linear-gradient(var(--color-text), var(--color-text)) 0 50% / 100% 1px no-repeat;
+  opacity: 0.7;
+}
+
+.sheet__cross--tl { top: 0.15rem; left: 0.15rem; }
+.sheet__cross--tr { top: 0.15rem; right: 0.15rem; }
+.sheet__cross--bl { bottom: 0.15rem; left: 0.15rem; }
+.sheet__cross--br { bottom: 0.15rem; right: 0.15rem; }
+
+/* top-right title block */
+.sheet__title {
+  position: absolute;
+  top: 1.7rem;
+  right: 1.7rem;
+  display: grid;
+  min-width: 13rem;
+  margin: 0;
+  border: 1px solid var(--color-line);
+  background: color-mix(in srgb, var(--color-bg) 82%, transparent);
+}
+
+.sheet__title div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 0.3rem 0.6rem;
+}
+
+.sheet__title div + div {
+  border-top: 1px solid var(--color-line);
+}
+
+.sheet__title dt {
+  color: var(--color-text-muted);
+}
+
+.sheet__title dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* the title block would sit under the nav bar on tablets and phones */
+@media (max-width: 1000px) {
+  .sheet__title {
+    display: none;
+  }
+}
+
+/* callouts: hero shot only; BlueprintSheet.tsx fades them with the hero scroll */
+.sheet__hero {
+  display: none;
+}
+
+/* leaders and labels appear only once the ship has been plotted */
+.sheet__hero[data-live="false"] {
+  visibility: hidden;
+}
+
+
+@media (min-aspect-ratio: 11/10) {
+  .sheet__hero {
+    display: block;
+    position: absolute;
+    inset: 0;
+  }
+}
+
+.sheet__lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.sheet__line {
+  fill: none;
+  stroke: var(--color-text);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+}
+
+/* the leaders and the dimension bracket plot themselves whenever Blueprint switches on */
+:global(html[data-theme="blueprint"]) .sheet__line {
+  animation: sheet-fade-in calc(0.8s * var(--motion-time)) var(--ease) both;
+}
+
+.sheet__label {
+  position: absolute;
+  translate: 0 -50%;
+  white-space: nowrap;
+  padding-inline: 0.5rem;
+}
+
+.sheet__label--left {
+  translate: -100% -50%;
+}
+
+.sheet__label--center {
+  translate: -50% -50%;
+}
+
+:global(html[data-theme="blueprint"]) .sheet__label {
+  animation: sheet-fade-in calc(0.8s * var(--motion-time)) var(--ease) both;
+}
+
+@keyframes sheet-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :global(html[data-theme="blueprint"]) .sheet__line,
+  :global(html[data-theme="blueprint"]) .sheet__label {
+    animation: none;
+  }
+}

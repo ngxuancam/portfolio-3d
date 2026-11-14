@@ -141,7 +141,7 @@ export const resume: Resume = {
       repoUrl: "https://github.com/ngxuancam/onlyfan",
       stack: ["React Three Fiber", "Web Workers", "GLSL", "Next.js"],
       outcome: "Stable-fluids CFD on an 80×24×40 grid, solved live in the browser",
-      accent: "#b4541a",
+      accent: "var(--swatch-rust)",
     },
     {
       id: "orbit",
@@ -152,7 +152,7 @@ export const resume: Resume = {
       year: 2025,
       stack: ["React Three Fiber", "drei", "KTX2", "Zustand"],
       outcome: "+32% add-to-cart vs. static images",
-      accent: "#4a0e17",
+      accent: "var(--swatch-primary)",
     },
     {
       id: "pulse",
@@ -163,7 +163,7 @@ export const resume: Resume = {
       year: 2024,
       stack: ["Next.js", "TypeScript", "WebSockets", "Canvas"],
       outcome: "INP held under 120ms at p75",
-      accent: "#1b2430",
+      accent: "var(--swatch-ink)",
     },
     {
       id: "tides",
@@ -174,7 +174,7 @@ export const resume: Resume = {
       year: 2023,
       stack: ["GSAP", "ScrollTrigger", "Three.js", "GLSL"],
       outcome: "Awwwards Honorable Mention (placeholder)",
-      accent: "#9c8256",
+      accent: "var(--swatch-brass)",
     },
     {
       id: "kit",
@@ -185,7 +185,7 @@ export const resume: Resume = {
       year: 2022,
       stack: ["TypeScript", "Style Dictionary", "Storybook", "a11y"],
       outcome: "Adopted by 5 teams, 140+ components",
-      accent: "#6a1a26",
+      accent: "var(--swatch-wine)",
     },
   ],
   education: [

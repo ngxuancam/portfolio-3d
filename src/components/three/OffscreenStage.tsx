@@ -2,6 +2,9 @@
 
 import { useEffect, useRef } from "react";
 import { sceneSignals } from "@/lib/three/sceneSignals";
+import { themeStore } from "@/theme/themeStore";
+import { shipAnchors } from "@/lib/three/shipAnchors";
+import { themes } from "@/theme/themes";
 import { STAGE_MAX_DPR, type StageMessage, type StageProps, type StageReply } from "./stageProps";
 import styles from "./SceneBackdrop.module.css";
 
@@ -49,7 +52,9 @@ export default function OffscreenStage({ reducedMotion, skipIntro, burstCount, o
       onFallback();
     };
     worker.onmessage = (event: MessageEvent<StageReply>) => {
-      if (event.data.type === "ready") onReady();
+      const reply = event.data;
+      if (reply.type === "ready") onReady();
+      else if (reply.type === "anchors") shipAnchors.apply(reply.anchors);
       else fail();
     };
     worker.onerror = fail;
@@ -71,6 +76,7 @@ export default function OffscreenStage({ reducedMotion, skipIntro, burstCount, o
           skipIntro,
           burstCount,
           signals: sceneSignals.snapshot(),
+          look: themes[themeStore.get()].stage,
         },
         [offscreen],
       );
@@ -86,6 +92,9 @@ export default function OffscreenStage({ reducedMotion, skipIntro, burstCount, o
       if (!frame) frame = requestAnimationFrame(flush);
     });
 
+    // theme switch: the worker morphs lights, inks and formation
+    const unsubscribeTheme = themeStore.subscribe(() => send({ type: "theme", look: themes[themeStore.get()].stage }));
+
     // Follows the host box itself (not just window resizes): catches 0×0 → visible,
     // scrollbar and layout changes. Zero sizes are never forwarded.
     const resizeObserver = new ResizeObserver(() => {
@@ -99,6 +108,7 @@ export default function OffscreenStage({ reducedMotion, skipIntro, burstCount, o
 
     return () => {
       unsubscribe();
+      unsubscribeTheme();
       cancelAnimationFrame(frame);
       resizeObserver.disconnect();
       worker.terminate();

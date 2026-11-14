@@ -1,9 +1,12 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { PerformanceMonitor } from "@react-three/drei";
 import { StageScene } from "./StageScene";
+import { stageTheme } from "@/lib/three/stageTheme";
+import { themeStore } from "@/theme/themeStore";
+import { themes } from "@/theme/themes";
 import { STAGE_CAMERA, STAGE_GL, STAGE_MAX_DPR, type StageProps } from "./stageProps";
 import styles from "./SceneBackdrop.module.css";
 
@@ -20,6 +23,12 @@ export default function MainThreadStage({ reducedMotion, skipIntro, burstCount, 
     setReady(true);
     onReady();
   }, [onReady]);
+
+  // seed the live look, then follow runtime theme switches
+  useEffect(() => {
+    stageTheme.set(themes[themeStore.get()].stage, true);
+    return themeStore.subscribe(() => stageTheme.set(themes[themeStore.get()].stage));
+  }, []);
 
   // Stable callbacks so PerformanceMonitor keeps sampling instead of resetting on every render.
   const handleIncline = useCallback(() => setDpr(STAGE_MAX_DPR), []);

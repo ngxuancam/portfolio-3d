@@ -3,7 +3,7 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  animation: scene-backdrop-in 1.8s 0.2s var(--ease-out-expo) both;
+  animation: scene-backdrop-in 1.8s calc(0.2s * var(--motion-time)) var(--ease) both;
 }
 
 .scene-backdrop__canvas {

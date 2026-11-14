@@ -28,12 +28,12 @@
     width: 1.25rem;
     height: 1.5px;
     border-radius: 1px;
-    background: var(--oxford-navy);
+    background: var(--color-text);
     transition:
-      translate 0.45s var(--ease-out-expo),
-      rotate 0.45s var(--ease-out-expo),
+      translate calc(0.45s * var(--motion-time)) var(--ease),
+      rotate calc(0.45s * var(--motion-time)) var(--ease),
       opacity 0.25s,
-      scale 0.35s var(--ease-out-expo);
+      scale calc(0.35s * var(--motion-time)) var(--ease);
   }
 
   .menu-toggle__bar:nth-child(1) {
@@ -71,16 +71,16 @@
     right: 0;
     display: block;
     padding: 1.25rem 1.5rem;
-    border: 1px solid var(--brass);
+    border: 1px solid var(--color-accent);
     border-radius: var(--radius-lg);
-    background: var(--ecru);
+    background: var(--color-bg);
     opacity: 0;
     visibility: hidden;
     translate: 0 -0.75rem;
     /* closing: stay visible until the fade ends */
     transition:
       opacity 0.35s,
-      translate 0.5s var(--ease-out-expo),
+      translate calc(0.5s * var(--motion-time)) var(--ease),
       visibility 0s 0.35s;
   }
 
@@ -91,7 +91,7 @@
     /* opening: visible immediately, so focus can move into the links */
     transition:
       opacity 0.35s,
-      translate 0.5s var(--ease-out-expo),
+      translate calc(0.5s * var(--motion-time)) var(--ease),
       visibility 0s;
   }
 }

@@ -1,0 +1,31 @@
+.toggle {
+  position: fixed;
+  left: 50%;
+  bottom: 1rem;
+  translate: -50% 0;
+  z-index: 100;
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-pill);
+  background: var(--color-bg);
+}
+
+.toggle__btn {
+  padding: 0.4rem 1rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-size: 0.75rem;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.toggle__btn[aria-pressed="true"] {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}

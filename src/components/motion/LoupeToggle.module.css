@@ -8,10 +8,10 @@
   align-items: center;
   gap: 0.6rem;
   padding: 0.5rem 0.6rem 0.5rem 0.85rem;
-  border: 1px solid var(--brass);
+  border: 1px solid var(--color-accent);
   border-radius: var(--radius-pill);
-  background: var(--ecru);
-  color: var(--oxford-navy);
+  background: var(--color-bg);
+  color: var(--color-text);
   font: inherit;
   cursor: pointer;
   /* rides above the footer — --footer-lift is set by the back-to-top button */
@@ -46,9 +46,9 @@
   position: relative;
   width: 2rem;
   height: 1.1rem;
-  border: 1px solid var(--brass);
+  border: 1px solid var(--color-accent);
   border-radius: var(--radius-pill);
-  background: var(--parchment-line);
+  background: var(--color-line);
   transition: background-color 0.3s;
 }
 
@@ -59,24 +59,24 @@
   width: 0.7rem;
   height: 0.7rem;
   border-radius: 50%;
-  background: var(--brass-ink);
+  background: var(--color-accent-ink);
   translate: 0 -50%;
   transition:
-    translate 0.35s var(--ease-out-expo),
+    translate calc(0.35s * var(--motion-time)) var(--ease),
     background-color 0.3s;
 }
 
 .loupe[data-state="on"] .loupe__track {
-  background: var(--ecru-deep);
+  background: var(--color-surface);
 }
 
 .loupe[data-state="on"] .loupe__knob {
   translate: 0.9rem -50%;
-  background: var(--deep-burgundy);
+  background: var(--color-primary);
 }
 
 .loupe:hover {
-  color: var(--deep-burgundy);
+  color: var(--color-primary);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -84,4 +84,9 @@
   .loupe__knob {
     transition: none;
   }
+}
+
+/* the Blueprint theme has no loupe, so no switch for it */
+:global(html[data-theme-loupe="off"]) .loupe {
+  display: none;
 }

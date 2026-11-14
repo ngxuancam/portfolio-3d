@@ -1,6 +1,9 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useRef } from "react";
+import { useFrame } from "@react-three/fiber";
+import type * as THREE from "three";
+import { stageTheme } from "@/lib/three/stageTheme";
 
 /**
  * Classic portrait studio rig, direct lights only (no environment map: rendering a
@@ -12,14 +15,33 @@ import { memo } from "react";
  *   sky/ground - a warm hemisphere for the soft wrap the environment used to give
  */
 function StudioLightingImpl() {
+  const hemi = useRef<THREE.HemisphereLight>(null);
+  const key = useRef<THREE.DirectionalLight>(null);
+  const fill = useRef<THREE.DirectionalLight>(null);
+  const kickL = useRef<THREE.DirectionalLight>(null);
+  const kickR = useRef<THREE.DirectionalLight>(null);
+  const back = useRef<THREE.DirectionalLight>(null);
+
+  // light colours follow the live theme (a handful of Color copies per frame)
+  useFrame(() => {
+    const c = stageTheme.current;
+    hemi.current?.color.copy(c.sky);
+    hemi.current?.groundColor.copy(c.ground);
+    key.current?.color.copy(c.key);
+    fill.current?.color.copy(c.fill);
+    kickL.current?.color.copy(c.kickLeft);
+    kickR.current?.color.copy(c.kickRight);
+    back.current?.color.copy(c.back);
+  });
+
   return (
     <>
-      <hemisphereLight args={["#fff8ee", "#d9cbb4", 0.9]} />
-      <directionalLight position={[-3, 3, 4]} intensity={2.6} color="#fff4e8" />
-      <directionalLight position={[3.5, 0.5, 3.5]} intensity={0.9} color="#eef1ff" />
-      <directionalLight position={[-5, 1, -2]} intensity={2.0} color="#ffffff" />
-      <directionalLight position={[5, 1, -2]} intensity={2.0} color="#f2e6cf" />
-      <directionalLight position={[0, 5, -4]} intensity={1.6} color="#9fb6e0" />
+      <hemisphereLight ref={hemi} args={["#ffffff", "#ffffff", 0.9]} />
+      <directionalLight ref={key} position={[-3, 3, 4]} intensity={2.6} />
+      <directionalLight ref={fill} position={[3.5, 0.5, 3.5]} intensity={0.9} />
+      <directionalLight ref={kickL} position={[-5, 1, -2]} intensity={2.0} />
+      <directionalLight ref={kickR} position={[5, 1, -2]} intensity={2.0} />
+      <directionalLight ref={back} position={[0, 5, -4]} intensity={1.6} />
     </>
   );
 }

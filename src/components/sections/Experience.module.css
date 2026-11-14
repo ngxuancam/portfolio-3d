@@ -28,7 +28,7 @@
 }
 
 .experience__rail {
-  background: var(--brass);
+  background: var(--color-accent);
   transform-origin: top;
 }
 
@@ -61,8 +61,8 @@
   width: 0.7rem;
   height: 0.7rem;
   border-radius: 50%;
-  background: var(--ecru);
-  border: 1px solid var(--brass);
+  background: var(--color-bg);
+  border: 1px solid var(--color-accent);
 }
 
 .experience__card {
@@ -83,7 +83,7 @@
   font-family: var(--font-script);
   font-size: 1.45rem;
   line-height: 1.2;
-  color: var(--deep-burgundy);
+  color: var(--color-primary);
 }
 
 .experience__role {
@@ -100,7 +100,7 @@
 }
 
 .experience__summary {
-  color: var(--oxford-navy);
+  color: var(--color-text);
 }
 
 .experience__highlights {
@@ -121,7 +121,7 @@
   top: 0.85em;
   width: 0.8rem;
   height: 1px;
-  background: var(--brass);
+  background: var(--color-accent);
 }
 
 .experience__stack {

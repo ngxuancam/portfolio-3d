@@ -1,6 +1,8 @@
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { themeStore } from "@/theme/themeStore";
+import { themes } from "@/theme/themes";
 
 /**
  * Singleton plugin registration. Every client island imports gsap from here,
@@ -8,7 +10,13 @@ import { useGSAP } from "@gsap/react";
  */
 if (typeof window !== "undefined") {
   gsap.registerPlugin(useGSAP, ScrollTrigger);
-  gsap.defaults({ ease: "power3.out", duration: 0.9 });
+  // tweens created from now on use the active theme's feel (running ones finish as they were)
+  const applyMotion = () => {
+    const { gsapEase, gsapDuration } = themes[themeStore.get()].motion;
+    gsap.defaults({ ease: gsapEase, duration: gsapDuration });
+  };
+  applyMotion();
+  themeStore.subscribe(applyMotion);
 }
 
 export { gsap, ScrollTrigger, useGSAP };

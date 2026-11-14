@@ -49,7 +49,7 @@
   rotate: -40deg;
   pointer-events: none;
   user-select: none;
-  filter: drop-shadow(0 6px 10px rgb(27 36 48 / 0.28));
+  filter: drop-shadow(0 6px 10px color-mix(in srgb, var(--color-text) 28%, transparent));
 }
 
 /* switched off by the visitor (LoupeToggle): hide the loupe, the native cursor returns */
@@ -67,8 +67,14 @@
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: var(--deep-burgundy);
+  background: var(--color-primary);
   pointer-events: none;
   visibility: hidden;
   will-change: transform;
+}
+
+/* themes without a loupe: no lens, no dot (the native cursor comes back, see globals.css) */
+:global(html[data-theme-loupe="off"]) .cursor__lens,
+:global(html[data-theme-loupe="off"]) .cursor__dot {
+  display: none;
 }

@@ -15,7 +15,7 @@
   font-size: clamp(1.5rem, 2.5vw, 2.1rem);
   font-weight: 400;
   line-height: 1.4;
-  color: var(--oxford-navy);
+  color: var(--color-text);
 }
 
 .about__facts-card {
@@ -46,12 +46,12 @@
   font-weight: 400;
   letter-spacing: var(--tracking-label);
   text-transform: uppercase;
-  color: var(--brass-ink);
+  color: var(--color-accent-ink);
 }
 
 .about__fact dd {
   margin: 0;
-  color: var(--oxford-navy);
+  color: var(--color-text);
 }
 
 /* flat ledger of figures, divided by hairlines — no card shadow */
@@ -80,7 +80,7 @@
   font-weight: 500;
   font-size: clamp(3.2rem, 6vw, 5rem);
   line-height: 1;
-  color: var(--deep-burgundy);
+  color: var(--color-primary);
   font-variant-numeric: lining-nums tabular-nums;
 }
 

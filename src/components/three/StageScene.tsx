@@ -1,9 +1,22 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
+import { useFrame, useThree } from "@react-three/fiber";
+import { stageTheme } from "@/lib/three/stageTheme";
 import { PortraitModel } from "./PortraitModel";
 import { StudioLighting } from "./StudioLighting";
 import { CameraRig } from "./CameraRig";
+import { ShipModel } from "./ShipModel";
+
+/** Advances the theme morph each frame; wakes a demand-driven loop (reduced motion) while it runs. */
+function ThemeDriver() {
+  const invalidate = useThree((state) => state.invalidate);
+  useEffect(() => stageTheme.subscribe(invalidate), [invalidate]);
+  useFrame((_, delta) => {
+    if (stageTheme.step(delta)) invalidate();
+  });
+  return null;
+}
 
 export interface StageSceneProps {
   reducedMotion: boolean;
@@ -22,8 +35,12 @@ export interface StageSceneProps {
 export function StageScene({ reducedMotion, skipIntro, burstCount, onReady }: StageSceneProps) {
   return (
     <>
+      <ThemeDriver />
       <StudioLighting />
       <CameraRig />
+      <Suspense fallback={null}>
+        <ShipModel />
+      </Suspense>
       <Suspense fallback={null}>
         <PortraitModel
           particleCount={burstCount}

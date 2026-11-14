@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { resume } from "@/content/resume";
+import { defaultTheme } from "@/theme/themes";
 
 const { basics, skillGroups } = resume;
 
@@ -43,7 +44,7 @@ export function createSiteMetadata(): Metadata {
 }
 
 export const siteViewport: Viewport = {
-  themeColor: "#fdfbf7",
+  themeColor: defaultTheme.colors.bg,
   colorScheme: "light",
   width: "device-width",
   initialScale: 1,

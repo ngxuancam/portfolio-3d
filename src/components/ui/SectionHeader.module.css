@@ -26,14 +26,14 @@
   font-size: 1.05rem;
   letter-spacing: 0.04em;
   text-transform: none;
-  color: var(--brass-ink);
+  color: var(--color-accent-ink);
 }
 
 .section-header__index::after {
   content: "";
   width: 2.5rem;
   height: 1px;
-  background: var(--brass);
+  background: var(--color-accent);
 }
 
 .section-header__title {

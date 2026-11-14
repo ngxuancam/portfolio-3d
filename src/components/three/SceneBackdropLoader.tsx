@@ -95,8 +95,10 @@ export function SceneBackdropLoader() {
     let heroHeight = 1;
     let tops: number[] = [];
     let viewport = 1;
+    let maxScroll = 0;
     const measure = () => {
       viewport = window.innerHeight;
+      maxScroll = document.documentElement.scrollHeight - viewport;
       heroHeight = hero.offsetHeight || 1;
       tops = sections.map((el) => el.getBoundingClientRect().top + window.scrollY);
     };
@@ -108,7 +110,10 @@ export function SceneBackdropLoader() {
       sceneSignals.scroll = Math.min(Math.max(y / heroHeight, 0), 1);
       let stage = 0;
       tops.forEach((top, i) => {
-        const progress = (y - (top - viewport)) / viewport;
+        // the last section is shorter than the viewport on some screens: let its progress finish
+        // at the very bottom of the page, so the final stage is always reached (stage = sections-1)
+        const span = i === tops.length - 1 ? Math.max(Math.min(viewport, maxScroll - (top - viewport)), 1) : viewport;
+        const progress = (y - (top - viewport)) / span;
         if (progress >= 0) stage = i + Math.min(progress, 1);
       });
       sceneSignals.stage = stage;

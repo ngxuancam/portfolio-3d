@@ -23,7 +23,7 @@
   font-family: var(--font-display);
   font-style: italic;
   font-size: 1.1rem;
-  color: var(--brass-ink);
+  color: var(--color-accent-ink);
 }
 
 .skills__card-title {
@@ -58,14 +58,14 @@
 
 /* flat burgundy block for mastery — no gradient */
 .skills__chip--expert {
-  border-color: var(--deep-burgundy);
-  background: var(--deep-burgundy);
-  color: var(--ecru);
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
 }
 
 .skills__chip--advanced {
-  border-color: var(--brass);
-  color: var(--oxford-navy);
+  border-color: var(--color-accent);
+  color: var(--color-text);
 }
 
 .skills__chip--proficient {
@@ -94,11 +94,11 @@
   font-size: clamp(2.4rem, 5.5vw, 4.5rem);
   white-space: nowrap;
   /* brass-deep clears 3:1 for large text while still reading as a quiet echo */
-  color: var(--brass-deep);
+  color: var(--color-accent-deep);
 }
 
 .skills__marquee-item:nth-child(3n) {
-  color: var(--deep-burgundy);
+  color: var(--color-primary);
 }
 
 @keyframes skills-marquee {

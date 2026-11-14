@@ -66,6 +66,7 @@ uniform float uFlowerRadius;
 uniform vec3 uFlowerCenter;
 uniform sampler2D uMap;
 uniform float uBlur;        // depth-of-field strength for the current camera shot (0..1)
+uniform float uShape;       // theme formation: 0 = flower; the particles fade out as it nears 1
 attribute vec3 aNormal;
 attribute vec2 aUv;
 attribute float aSeed;
@@ -80,11 +81,11 @@ ${burstFieldGlsl}
 
 const float PETALS = 6.0;
 const float PI = 3.14159265359;
-// linear-space palette, normal blending over the ecru canvas
-const vec3 BRASS = vec3(0.54, 0.38, 0.2);      // #C2A679
-const vec3 BURGUNDY = vec3(0.17, 0.012, 0.02); // a touch lighter than #4A0E17 so petals read
-const vec3 NAVY = vec3(0.012, 0.018, 0.03);    // #1B2430
-const vec3 OLIVE = vec3(0.1, 0.08, 0.03);      // brass deepened toward navy — leaf green, on-palette
+// inks come from the active theme (src/theme/themes.ts): A tips/lights, B heart/hull, C shade, D stem/flame
+uniform vec3 uInkA;
+uniform vec3 uInkB;
+uniform vec3 uInkC;
+uniform vec3 uInkD;
 
 // stem: a gently S-curved stalk hanging from the flower's heart (model units)
 const float STEM_LENGTH = 1.3;
@@ -145,6 +146,7 @@ void main(){
   target = mix(target, stemTarget, stem);
   target = mix(target, leafTarget, leaf);
 
+
   // launch along the surface normal first, then curve into the flower
   vec3 p = mix(position, target, e) + aNormal * sin(e * PI) * (0.18 + aSeed * 0.22);
 
@@ -160,11 +162,11 @@ void main(){
   vBokeh = bokeh;
 
   vec3 skin = texture2D(uMap, aUv).rgb;
-  vec3 petalColor = mix(BURGUNDY, BRASS, smoothstep(0.35, 1.0, rn));  // burgundy heart → brass tips
-  petalColor = mix(petalColor, mix(NAVY, BURGUNDY, rn), inner * 0.8);   // navy inner ring
-  petalColor = mix(petalColor, BRASS, stamen);
-  petalColor = mix(petalColor, mix(NAVY, OLIVE, 0.35), stem);
-  petalColor = mix(petalColor, mix(OLIVE, BRASS, 0.2 + 0.3 * (1.0 - abs(w))), leaf);  // lighter midrib
+  vec3 petalColor = mix(uInkB, uInkA, smoothstep(0.35, 1.0, rn));  // burgundy heart → brass tips
+  petalColor = mix(petalColor, mix(uInkC, uInkB, rn), inner * 0.8);   // navy inner ring
+  petalColor = mix(petalColor, uInkA, stamen);
+  petalColor = mix(petalColor, mix(uInkC, uInkD, 0.35), stem);
+  petalColor = mix(petalColor, mix(uInkD, uInkA, 0.2 + 0.3 * (1.0 - abs(w))), leaf);  // lighter midrib
   vColor = mix(skin, petalColor, e * 0.85);
   vGlow = 1.0 - smoothstep(0.0, 0.25, t);  // brass flash at launch, fading in flight
   vVisible = step(0.0001, t);
@@ -182,6 +184,8 @@ varying float vGlow;
 varying float vVisible;
 varying float vSeed;
 varying float vBokeh;
+uniform vec3 uGlow;
+uniform float uShape;
 
 float hash(vec2 p){
   p = fract(p * vec2(123.34, 456.21));
@@ -197,8 +201,10 @@ void main(){
   float stipple = step(hash(gl_FragCoord.xy + vSeed * 97.0), coverage * 1.15) * 0.92;
   float soft = smoothstep(0.5, 0.0, d) * 0.3;
   float alpha = mix(stipple, soft, clamp(vBokeh * 1.6, 0.0, 1.0));
+  // theme switch: the flower's particles fade out as the formation moves away from 0
+  alpha *= 1.0 - smoothstep(0.0, 0.85, uShape);
   if (alpha < 0.01) discard;
-  vec3 ink = mix(vColor, vec3(0.54, 0.38, 0.2), vGlow * 0.6);
+  vec3 ink = mix(vColor, uGlow, vGlow * 0.6);
   gl_FragColor = vec4(ink, alpha);
   #include <colorspace_fragment>
 }`;

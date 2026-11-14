@@ -7,6 +7,9 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { PointerExtras } from "@/components/motion/PointerExtras";
 import { LOUPE_HEAD_SCRIPT } from "@/lib/animation/loupePreference";
 import { ScrollToTop } from "@/components/motion/ScrollToTop";
+import { allThemesCss } from "@/theme/themes";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { BlueprintSheet } from "@/components/ui/BlueprintSheet";
 import "./globals.css";
 
 /** Body: clean, legible sans at light/regular weights (the serif carries the personality). */
@@ -58,6 +61,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
     >
       <head>
+        {/* colour tokens from src/theme/themes.ts */}
+        <style dangerouslySetInnerHTML={{ __html: allThemesCss }} />
         <script dangerouslySetInnerHTML={{ __html: MOTION_FLAG_SCRIPT }} />
         {/* loupe on/off preference, applied before first paint */}
         <script dangerouslySetInnerHTML={{ __html: LOUPE_HEAD_SCRIPT }} />
@@ -66,9 +71,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <SmoothScroll />
         {children}
         <ScrollToTop />
+        {/* dev-only theme tester */}
+        {process.env.NODE_ENV !== "production" && <ThemeToggle />}
         <PointerExtras />
         <GlassLensManager />
         <PaperGrain />
+        <BlueprintSheet />
         {/* real-visitor Core Web Vitals, reported to the Vercel dashboard */}
         <SpeedInsights />
       </body>

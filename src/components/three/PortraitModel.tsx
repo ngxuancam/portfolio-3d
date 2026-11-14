@@ -7,6 +7,7 @@ import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.j
 import * as THREE from "three";
 import { animate, utils, type JSAnimation } from "animejs";
 import "animejs/adapters/three";
+import { stageTheme } from "@/lib/three/stageTheme";
 import { sceneSignals } from "@/lib/three/sceneSignals";
 import { bakePortraitInWorker, type PortraitGeometries } from "@/lib/three/portraitBake";
 import {
@@ -45,8 +46,6 @@ const FACING_PITCH = THREE.MathUtils.degToRad(10);
 const FACING = new THREE.Matrix4()
   .makeRotationX(FACING_PITCH)
   .multiply(new THREE.Matrix4().makeRotationY(FACING_YAW));
-const BRASS = new THREE.Color("#c2a679");
-const BURGUNDY = new THREE.Color("#6a1a26");
 
 interface PortraitModelProps {
   particleCount: number;
@@ -108,9 +107,16 @@ function PortraitModelImpl({ particleCount, reducedMotion, skipIntro, onReady }:
       uProgress: { value: noIntro ? 0 : BURST_PROGRESS_MAX },
       uTime: { value: 0 },
       uPixelRatio: { value: 1 },
-      uEdgeColor: { value: BRASS.clone() },
-      uRimColorA: { value: BRASS.clone() },
-      uRimColorB: { value: BURGUNDY.clone() },
+      // the live theme colours themselves: StageScene's ThemeDriver steps them each frame
+      uEdgeColor: { value: stageTheme.current.edge },
+      uRimColorA: { value: stageTheme.current.rimA },
+      uRimColorB: { value: stageTheme.current.rimB },
+      uInkA: { value: stageTheme.current.inkA },
+      uInkB: { value: stageTheme.current.inkB },
+      uInkC: { value: stageTheme.current.inkC },
+      uInkD: { value: stageTheme.current.inkD },
+      uGlow: { value: stageTheme.current.glow },
+      uShape: { value: stageTheme.shape },
       uMap: { value: (source.material as THREE.MeshStandardMaterial).map },
       uFlowerRadius: { value: 0.62 },
       uFlowerCenter: { value: new THREE.Vector3(0, 0.12, 0.15) },
@@ -206,11 +212,12 @@ function PortraitModelImpl({ particleCount, reducedMotion, skipIntro, onReady }:
   useFrame((state, delta) => {
     const shared = (pointsRef.current?.material as THREE.ShaderMaterial | undefined)?.uniforms;
     if (!shared) return;
-    shared.uTime.value += delta;
+    shared.uTime.value += delta * stageTheme.tempo;
+    shared.uShape.value = stageTheme.shape;
     shared.uPixelRatio.value = state.viewport.dpr;
     // scroll owns the burst once the intro has finished; damped so wheel steps feel fluid
     const scrollProgress = THREE.MathUtils.smoothstep(sceneSignals.scroll, 0.04, 0.9) * BURST_PROGRESS_MAX;
-    const target = Math.max(intro.current.value, scrollProgress);
+    const target = Math.max(intro.current.value, scrollProgress, stageTheme.shape * BURST_PROGRESS_MAX);
     shared.uProgress.value = THREE.MathUtils.damp(shared.uProgress.value, target, 8, delta);
     // depth of field only for the close-up "Things I've built" shot (camera stage 4):
     // fades in as the camera approaches, out as it pulls back for Contact

@@ -2,6 +2,8 @@
 import { createRoot, extend, type ReconcilerRoot, type RenderProps } from "@react-three/fiber";
 import * as THREE from "three";
 import { sceneSignals } from "@/lib/three/sceneSignals";
+import { stageTheme } from "@/lib/three/stageTheme";
+import { shipAnchors } from "@/lib/three/shipAnchors";
 import { StageScene } from "./StageScene";
 import { STAGE_CAMERA, STAGE_GL, type StageMessage, type StageReply } from "./stageProps";
 
@@ -58,6 +60,8 @@ function shimCanvas(canvas: OffscreenCanvas, width: number, height: number) {
  * camera is not recreated).
  */
 export function startStage() {
+  // the ship's on-screen landmarks go to the page, which draws the callouts
+  shipAnchors.sink = (anchors) => post({ type: "anchors", anchors });
   extend(THREE as unknown as Parameters<typeof extend>[0]);
   patchImageLoader();
 
@@ -77,6 +81,7 @@ export function startStage() {
     }
     const canvas = shimCanvas(message.canvas, message.width, message.height);
     sceneSignals.apply(message.signals);
+    stageTheme.set(message.look, true);
 
     root = createRoot(canvas);
     config = {
@@ -113,6 +118,9 @@ export function startStage() {
         break;
       case "signals":
         sceneSignals.apply(message.signals);
+        break;
+      case "theme":
+        stageTheme.set(message.look);
         break;
     }
   };

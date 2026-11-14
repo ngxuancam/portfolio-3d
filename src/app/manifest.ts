@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { defaultTheme } from "@/theme/themes";
 import { resume } from "@/content/resume";
 
 export default function manifest(): MetadataRoute.Manifest {
@@ -8,8 +9,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: resume.basics.headline,
     start_url: "/",
     display: "standalone",
-    background_color: "#fdfbf7",
-    theme_color: "#1b2430",
+    background_color: defaultTheme.colors.bg,
+    theme_color: defaultTheme.colors.text,
     icons: [{ src: "/favicon.ico", sizes: "any", type: "image/x-icon" }],
   };
 }

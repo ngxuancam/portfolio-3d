@@ -25,12 +25,12 @@
 /* needle holes: the shadow each stitch casts into the leather */
 .stitching__holes {
   translate: 0 1px;
-  stroke: rgb(27 36 48 / 0.18);
+  stroke: color-mix(in srgb, var(--color-text) 18%, transparent);
   stroke-width: 1.8;
 }
 
 /* waxed brass thread */
 .stitching__thread {
-  stroke: var(--brass);
+  stroke: var(--color-accent);
   stroke-width: 1.4;
 }

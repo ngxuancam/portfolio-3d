@@ -1,4 +1,6 @@
 import type { SignalSnapshot } from "@/lib/three/sceneSignals";
+import type { StageLook } from "@/theme/themes";
+import type { AnchorSnapshot } from "@/lib/three/shipAnchors";
 
 /** Props shared by both stage hosts (offscreen worker and main-thread fallback). */
 export interface StageProps {
@@ -28,11 +30,13 @@ export type StageMessage =
       skipIntro: boolean;
       burstCount: number;
       signals: SignalSnapshot;
+      look: StageLook;
     }
   | { type: "resize"; width: number; height: number }
-  | { type: "signals"; signals: SignalSnapshot };
+  | { type: "signals"; signals: SignalSnapshot }
+  | { type: "theme"; look: StageLook };
 
-export type StageReply = { type: "ready" } | { type: "error"; message: string };
+export type StageReply = { type: "ready" } | { type: "error"; message: string } | { type: "anchors"; anchors: AnchorSnapshot };
 
 /** OffscreenCanvas can be handed to a worker (WebGL support is confirmed by the worker). */
 export function supportsOffscreenStage(): boolean {

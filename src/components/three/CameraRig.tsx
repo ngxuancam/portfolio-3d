@@ -4,9 +4,13 @@ import { memo, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { sceneSignals } from "@/lib/three/sceneSignals";
+import { stageTheme } from "@/lib/three/stageTheme";
 import { createCameraPath, frameAt } from "@/lib/three/cameraPath";
 
 const WIDE_ASPECT = 1.1;
+/** vertical FOV of the portrait shots, and of the ship's wide-angle look */
+const FOV_PORTRAIT = 45;
+const FOV_SHIP = 64;
 
 /**
  * Flies the camera along the section path. `sceneSignals.stage` (0 … sections-1) is
@@ -22,7 +26,9 @@ function CameraRigImpl() {
   useFrame((state, delta) => {
     const s = rig.current;
     const { position, target } = s;
-    s.stage = THREE.MathUtils.damp(s.stage, sceneSignals.stage, 3.2, delta);
+    // the blueprint ship keeps the hero shot on every section (the page scrolls over it)
+    const stageTarget = sceneSignals.stage * (1 - stageTheme.shape);
+    s.stage = THREE.MathUtils.damp(s.stage, stageTarget, 3.2, delta);
     s.pointerX = THREE.MathUtils.damp(s.pointerX, sceneSignals.pointer.x, 2.5, delta);
     s.pointerY = THREE.MathUtils.damp(s.pointerY, sceneSignals.pointer.y, 2.5, delta);
 
@@ -30,8 +36,10 @@ function CameraRigImpl() {
     path.positions.getPoint(t, position);
     path.targets.getPoint(t, target);
     // a little handheld parallax from the pointer — translation only, the subject never tilts
-    position.x += s.pointerX * 0.18;
-    position.y += s.pointerY * 0.12;
+    // (none in the blueprint theme: its ship follows the scroll only)
+    const parallax = 1 - stageTheme.shape;
+    position.x += s.pointerX * 0.18 * parallax;
+    position.y += s.pointerY * 0.12 * parallax;
 
     state.camera.position.copy(position);
     state.camera.lookAt(target);
@@ -39,6 +47,7 @@ function CameraRigImpl() {
     // composition: slide the frustum so the subject sits left/centre/right of the copy
     const { width, height } = state.size;
     const camera = state.camera as THREE.PerspectiveCamera;
+    camera.fov = THREE.MathUtils.lerp(FOV_PORTRAIT, FOV_SHIP, stageTheme.shape); // setViewOffset re-projects
     camera.setViewOffset(width, height, -frameAt(path, s.stage) * width, 0, width, height);
   });
 

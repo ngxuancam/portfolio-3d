@@ -4,34 +4,11 @@
  * micro-borders, generous whitespace and a faint linen grain for a printed feel.
  */
 :root {
-  /* palette */
-  --oxford-navy: #1b2430;
-  --oxford-navy-soft: #3a4452;
-  --deep-burgundy: #4a0e17;
-  --deep-burgundy-hover: #5e1520;
-  --ecru: #fdfbf7;
-  --ecru-deep: #f5f0e6;
-  --parchment-line: #eae5db;
-  --brass: #c2a679;
-  --brass-deep: #9c8256;
-  /* brass dark enough for small text on ecru (5.6:1, WCAG AA) */
-  --brass-ink: #7a6340;
-
-  /* semantic roles */
-  --color-bg: var(--ecru);
-  --color-surface: var(--ecru-deep);
-  --color-text: var(--oxford-navy);
-  --color-text-muted: #545c68;
-  --color-text-faint: #8a8f96;
-  --color-primary: var(--deep-burgundy);
-  --color-on-primary: var(--ecru);
-  --color-accent: var(--brass);
-  --color-line: var(--parchment-line);
-  --color-line-brass: var(--brass);
+  /* colour tokens (--color-*, --swatch-*) are generated from src/theme/themes.ts and injected by layout.tsx */
 
   /* glass — optical only: refraction + a hairline brass rim, no tint gradients or gloss */
   --light-angle: 135deg; /* follows the pointer, so the rim glint travels with the "light" */
-  --glass-bg: rgb(253 251 247 / 0.42);
+  --glass-bg: color-mix(in srgb, var(--color-bg) 42%, transparent);
   --glass-filter: blur(1.5px) saturate(115%);
 
   /* type */
@@ -48,8 +25,7 @@
   --radius-lg: 1.5rem;
   --radius-pill: 999px;
 
-  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-  color-scheme: light;
+  /* --ease / --motion-time come from the theme (src/theme/themes.ts) */
 }
 
 /* ───────────── Base ───────────── */
@@ -74,7 +50,24 @@ body {
   font-size: 1.0625rem;
   line-height: 1.7;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.8s ease, color 0.8s ease;
   text-rendering: optimizeLegibility;
+}
+
+/* blueprint grid: a fixed sheet under the page; --sheet (0/1) comes from the theme */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: var(--sheet, 0);
+  background:
+    linear-gradient(var(--grid-line-major, transparent) 1px, transparent 1px) 0 0 / 120px 120px,
+    linear-gradient(90deg, var(--grid-line-major, transparent) 1px, transparent 1px) 0 0 / 120px 120px,
+    linear-gradient(var(--grid-line, transparent) 1px, transparent 1px) 0 0 / 24px 24px,
+    linear-gradient(90deg, var(--grid-line, transparent) 1px, transparent 1px) 0 0 / 24px 24px;
+  transition: opacity calc(0.8s * var(--motion-time)) var(--ease);
 }
 
 /* clip (not hidden) so no scroll container is created — ScrollTrigger pins keep working */
@@ -107,7 +100,7 @@ h3 {
   font-family: var(--font-display);
   font-weight: 500;
   letter-spacing: var(--tracking-display);
-  color: var(--oxford-navy);
+  color: var(--color-text);
 }
 
 ul,
@@ -118,21 +111,21 @@ ol {
 }
 
 ::selection {
-  background: var(--deep-burgundy);
-  color: var(--ecru);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
 }
 
 :focus-visible {
-  outline: 1px solid var(--deep-burgundy);
+  outline: 1px solid var(--color-primary);
   outline-offset: 4px;
   border-radius: 4px;
 }
 
 /* the loupe replaces the native cursor once it is live — unless switched off */
 @media (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  html[data-cursor="ready"]:not([data-loupe="off"]),
-  html[data-cursor="ready"]:not([data-loupe="off"]) a,
-  html[data-cursor="ready"]:not([data-loupe="off"]) button {
+  html[data-cursor="ready"]:not([data-loupe="off"], [data-theme-loupe="off"]),
+  html[data-cursor="ready"]:not([data-loupe="off"], [data-theme-loupe="off"]) a,
+  html[data-cursor="ready"]:not([data-loupe="off"], [data-theme-loupe="off"]) button {
     cursor: none;
   }
 }
@@ -172,10 +165,10 @@ ol {
   border-radius: inherit;
   background: linear-gradient(
     var(--light-angle),
-    var(--brass) 0%,
-    rgb(194 166 121 / 0.55) 30%,
-    rgb(194 166 121 / 0.55) 70%,
-    var(--brass-deep) 100%
+    var(--color-accent) 0%,
+    color-mix(in srgb, var(--color-accent) 55%, transparent) 30%,
+    color-mix(in srgb, var(--color-accent) 55%, transparent) 70%,
+    var(--color-accent-deep) 100%
   );
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
@@ -204,8 +197,8 @@ html.is-chromium .u-glass--lens {
  */
 .u-card {
   position: relative;
-  border: 1px solid var(--parchment-line);
-  background: rgb(253 251 247 / 0.93);
+  border: 1px solid var(--color-line);
+  background: color-mix(in srgb, var(--color-bg) 93%, transparent);
 }
 
 /* ───────────── Scroll reveals ─────────────
@@ -291,7 +284,7 @@ html.is-chromium .u-glass--lens {
   font-weight: 400;
   letter-spacing: 0;
   text-transform: none;
-  color: var(--deep-burgundy);
+  color: var(--color-primary);
 }
 
 /* ───────────── Utilities ───────────── */
