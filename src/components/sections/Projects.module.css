@@ -1,165 +1,152 @@
 .projects {
-  padding-top: var(--space-section);
-  border-top: 1px solid var(--color-line);
+  display: grid;
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.projects__viewport {
-  overflow: hidden;
-  perspective: 1400px;
-}
-
-.projects__track {
-  display: flex;
-  gap: clamp(1.25rem, 2.5vw, 2rem);
-  width: max-content;
-  padding: 6rem max(var(--space-gutter), (100vw - var(--width-content)) / 2) var(--space-section);
-  will-change: transform;
-}
-
-.projects__card {
-  --card-accent: var(--deep-burgundy);
+/* flat panel, hairline border, square corners — the border brightens on hover / keyboard focus */
+.card {
   position: relative;
+  display: grid;
+  background: var(--c-panel);
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r);
+  transition: border-color calc(8 * var(--f)) var(--ease-cutout);
+}
+
+.card:hover,
+.card:focus-within {
+  border-color: var(--c-rule-2);
+  transition-duration: calc(4 * var(--f));
+  transition-timing-function: var(--ease-ignite);
+}
+
+/* media and body side by side once the column is wide enough */
+@media (min-width: 48rem) {
+  .card {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  }
+}
+
+.card__media {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16 / 7;
+  border-bottom: 1px solid var(--c-rule);
+}
+
+@media (min-width: 48rem) {
+  .card__media {
+    aspect-ratio: auto;
+    min-height: 100%;
+    border-bottom: 0;
+    border-right: 1px solid var(--c-rule);
+  }
+}
+
+/* the plate: the project's accent mixed into the panel, under a hairline grid */
+.card__plate {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(to right, var(--c-rule) 0 1px, transparent 1px 2rem),
+    repeating-linear-gradient(to bottom, var(--c-rule) 0 1px, transparent 1px 2rem),
+    color-mix(in oklab, var(--accent, var(--c-panel)) 38%, var(--c-panel));
+  transition: scale calc(30 * var(--f)) var(--ease-expo);
+}
+
+.card:hover .card__plate,
+.card:focus-within .card__plate {
+  scale: 1.04;
+}
+
+.card__code {
+  position: absolute;
+  left: 1rem;
+  bottom: 0.5rem;
+  font-size: clamp(3.5rem, 8vw, 5.5rem);
+  font-weight: 200;
+  line-height: 1;
+  letter-spacing: var(--tracking-display);
+  font-variant-numeric: tabular-nums;
+  color: var(--c-ink);
+  opacity: 0.85;
+}
+
+.card__plateMeta {
+  position: absolute;
+  top: 0.875rem;
+  left: 1rem;
+  color: var(--c-ink);
+}
+
+/* a small crosshair, the "target" on the plate */
+.card__cross {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  background:
+    linear-gradient(var(--c-ink-2), var(--c-ink-2)) center / 100% 1px no-repeat,
+    linear-gradient(var(--c-ink-2), var(--c-ink-2)) center / 1px 100% no-repeat;
+}
+
+.card__body {
   display: grid;
   align-content: start;
   gap: 1rem;
-  width: clamp(18rem, 34vw, 29rem);
-  padding: clamp(1.5rem, 2.5vw, 2.25rem);
-  border-radius: var(--radius-lg);
-  transform-style: preserve-3d;
+  padding: clamp(1.25rem, 3vw, 1.75rem);
 }
 
-.projects__card-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  font-size: 0.72rem;
-  letter-spacing: var(--tracking-label);
-  color: var(--color-text-faint);
-}
-
-.projects__card-index {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 1.05rem;
-  letter-spacing: 0.04em;
-  color: var(--brass-ink);
-}
-
-.projects__card-year {
-  font-family: var(--font-script);
-  font-size: 1.35rem;
-  letter-spacing: 0;
-  color: var(--deep-burgundy);
-}
-
-/* flat colour plate with a single monogram — architectural, not glossy */
-.projects__card-art {
-  position: relative;
-  display: grid;
-  place-items: center;
-  aspect-ratio: 16 / 10;
-  border: 1px solid var(--color-line);
-  border-radius: calc(var(--radius-lg) - 0.5rem);
-  overflow: hidden;
-  background: var(--card-accent);
-}
-
-.projects__card-art::after {
-  content: "";
-  position: absolute;
-  inset: 0.75rem;
-  border: 1px solid rgb(253 251 247 / 0.35);
-  border-radius: calc(var(--radius-lg) - 1rem);
-}
-
-.projects__card-glyph {
-  position: relative;
-  z-index: 1;
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: clamp(5rem, 10vw, 7.5rem);
-  line-height: 1;
-  color: var(--ecru);
-  transition: transform 0.8s var(--ease-out-expo);
-}
-
-.projects__card:hover .projects__card-glyph {
-  transform: scale(1.08);
-}
-
-.projects__card-title {
-  margin-top: 0.5rem;
-  font-size: clamp(1.9rem, 3vw, 2.4rem);
-  line-height: 1;
-}
-
-.projects__card-tagline {
-  font-size: 0.7rem;
-  font-weight: 400;
-  letter-spacing: var(--tracking-label);
-  text-transform: uppercase;
-  color: var(--deep-burgundy);
-}
-
-.projects__card-text {
-  color: var(--color-text-muted);
-}
-
-.projects__card-outcome {
-  padding: 0.8rem 1rem;
-  border-left: 1px solid var(--brass);
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 1.15rem;
-  color: var(--oxford-navy);
-}
-
-.projects__card-stack {
+.card__meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
+  align-items: center;
+  gap: 0.25rem 0.625rem;
 }
 
-.projects__card-stack li {
-  padding: 0.25rem 0.75rem;
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-pill);
-  font-size: 0.72rem;
-  color: var(--color-text-muted);
+.card__swatch {
+  width: 7px;
+  height: 7px;
+  background: var(--c-signal);
 }
 
-.projects__card-links {
+.card__name {
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  font-weight: 200;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  padding-bottom: 0.04em;
+}
+
+.card__desc {
+  max-width: 62ch;
+  font-size: 1rem;
+  color: var(--c-ink-2);
+}
+
+.card__outcome {
+  padding-block: 0.875rem;
+  border-block: 1px solid var(--c-rule);
+}
+
+.card__outcome p {
+  color: var(--c-ink);
+}
+
+.card__actions {
   display: flex;
-  gap: 1.25rem;
-  margin: 0;
-  font-size: 0.85rem;
-  letter-spacing: 0.04em;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+  padding-top: 0.25rem;
 }
 
-.projects__card-links a {
-  color: var(--oxford-navy);
-  text-decoration: none;
-  border-bottom: 1px solid var(--brass);
-  padding-bottom: 1px;
-  transition: color 0.2s ease, border-color 0.2s ease;
-}
-
-.projects__card-links a:hover,
-.projects__card-links a:focus-visible {
-  color: var(--brass-ink);
-  border-color: var(--brass-ink);
-}
-
-/* narrow / touch: native horizontal swipe with snap instead of the pinned scroller */
-@media (max-width: 959px) {
-  .projects__viewport {
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-  }
-
-  .projects__card {
-    width: min(82vw, 24rem);
-    scroll-snap-align: center;
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .card__plate {
+    transition: none;
   }
 }

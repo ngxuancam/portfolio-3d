@@ -1,0 +1,407 @@
+/*
+ * Boot screen. Default styles are the finished, static layout (what reduced-motion visitors
+ * see); the intro choreography only exists under `html.has-motion`, and runs from first paint.
+ * Timings are in 30 fps frames: calc(n * var(--f)).
+ */
+
+.loader {
+  --p: 0;
+  --inset: var(--gutter);
+
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  overflow: hidden;
+  background: var(--c-void);
+  color: var(--c-ink);
+  pointer-events: auto;
+  /* failsafe for a page whose JS never arrives: fade out at 9 s, then stop catching clicks */
+  animation: loader-failsafe calc(12 * var(--f)) linear 9s both;
+}
+
+/* JS is in charge (see Loader.tsx) */
+.loader--live {
+  animation: none;
+}
+
+@keyframes loader-failsafe {
+  from {
+    opacity: 1;
+    visibility: visible;
+  }
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+/* ───────────── Frame: hairline rules + centre axes ───────────── */
+
+.rule,
+.axis {
+  position: absolute;
+  background: var(--c-rule);
+}
+
+.rule--top,
+.rule--bottom {
+  left: var(--inset);
+  right: var(--inset);
+  height: 1px;
+}
+
+.rule--top {
+  top: var(--inset);
+}
+
+.rule--bottom {
+  bottom: var(--inset);
+}
+
+.rule--left,
+.rule--right {
+  top: var(--inset);
+  bottom: var(--inset);
+  width: 1px;
+}
+
+.rule--left {
+  left: var(--inset);
+}
+
+.rule--right {
+  right: var(--inset);
+}
+
+/* faint crosshair through the emblem: the "build plate" the ship is assembled on */
+.axis {
+  opacity: 0.5;
+}
+
+.axis--x {
+  top: 50%;
+  left: var(--inset);
+  right: var(--inset);
+  height: 1px;
+}
+
+.axis--y {
+  left: 50%;
+  top: var(--inset);
+  bottom: var(--inset);
+  width: 1px;
+}
+
+/* ───────────── Corner marks ───────────── */
+
+.corner {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background: var(--c-ink);
+}
+
+.corner--tl {
+  top: var(--inset);
+  left: var(--inset);
+  translate: -2px -2px;
+}
+
+.corner--tr {
+  top: var(--inset);
+  right: var(--inset);
+  translate: 2px -2px;
+}
+
+.corner--bl {
+  bottom: var(--inset);
+  left: var(--inset);
+  translate: -2px 2px;
+}
+
+.corner--br {
+  bottom: var(--inset);
+  right: var(--inset);
+  translate: 2px 2px;
+}
+
+/* ───────────── Emblem ───────────── */
+
+.emblem {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: clamp(140px, 24vmin, 230px);
+  height: auto;
+  translate: -50% -50%;
+  overflow: visible;
+}
+
+.emblem__ring {
+  stroke: var(--c-ink-3);
+  stroke-width: 1;
+  transform-box: view-box;
+  transform-origin: 100px 100px;
+}
+
+.emblem__tick--major {
+  stroke: var(--c-ink);
+}
+
+.emblem__ghost path,
+.emblem__built path {
+  stroke-width: 1;
+  stroke-linejoin: miter;
+  /* pathLength=1 on every path, so one dash of length 1 is "the whole stroke" (no
+     non-scaling-stroke here: it would re-measure dashes in screen space) */
+  stroke-dasharray: 1;
+}
+
+.emblem__ghost path {
+  stroke: var(--c-ink-3);
+  stroke-dashoffset: 0;
+  opacity: 0.6;
+}
+
+.emblem__built path {
+  stroke: var(--c-ink);
+  stroke-dashoffset: calc(1 - var(--p));
+}
+
+/* the burning build edge, climbing the hull with the counter (mirrors the 3D build sweep) */
+.emblem__edge {
+  stroke: var(--c-signal);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  transform-box: view-box;
+  transform: translateY(calc(var(--p) * -130px));
+}
+
+/* ───────────── Rail + stage label ───────────── */
+
+.rail,
+.stage,
+.meter__label {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.65625rem;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--c-ink-3);
+  white-space: nowrap;
+}
+
+.rail {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--inset) / 2);
+  writing-mode: vertical-rl;
+  /* read bottom-to-top, like a spine label */
+  rotate: 180deg;
+  translate: -50% -50%;
+}
+
+.stage {
+  position: absolute;
+  top: calc(var(--inset) + 1.25rem);
+  right: calc(var(--inset) + 1.25rem);
+  display: flex;
+  gap: 1.25em;
+  color: var(--c-ink-2);
+}
+
+.stage__key {
+  color: var(--c-signal-2);
+}
+
+/* ───────────── Readout: counter + bar ───────────── */
+
+.readout {
+  position: absolute;
+  left: calc(var(--inset) + 1.25rem);
+  bottom: calc(var(--inset) + 1rem);
+  display: grid;
+  gap: 0.5rem;
+}
+
+.counter {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: clamp(4.5rem, 15vw, 11rem);
+  font-weight: 200;
+  line-height: 0.82;
+  letter-spacing: var(--tracking-display);
+  font-variant-numeric: tabular-nums;
+}
+
+.counter__pad {
+  color: var(--c-ink-3);
+  opacity: 0.45;
+}
+
+.meter {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-left: 0.35rem;
+}
+
+.bar {
+  position: relative;
+  display: block;
+  width: 128px;
+  height: 13px;
+  overflow: hidden;
+  outline: 1px solid var(--c-rule);
+  /* the outro fires the bar off toward its far end */
+  transform-origin: 100% 50%;
+}
+
+.bar__fill {
+  position: absolute;
+  inset: 0;
+  background: var(--c-signal);
+  transform-origin: 0 50%;
+  transform: scaleX(var(--p));
+}
+
+/* hatched "work in progress" segment riding just ahead of the fill */
+.bar__tail {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 24px;
+  background: repeating-linear-gradient(-45deg, var(--c-signal) 0 1.5px, transparent 1.5px 4px);
+  opacity: 0.7;
+  transform: translateX(calc(var(--p) * 128px));
+}
+
+/* ───────────── Outro sweep ───────────── */
+
+.sweep {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--c-signal);
+  box-shadow: 0 0 12px var(--c-signal);
+  transform: scaleX(0);
+}
+
+/* ───────────── Intro choreography (motion-capable only) ───────────── */
+
+:global(html.has-motion) .rule--top,
+:global(html.has-motion) .rule--bottom,
+:global(html.has-motion) .axis--x {
+  animation: draw-x calc(22 * var(--f)) var(--ease-expo) both;
+}
+
+:global(html.has-motion) .rule--left,
+:global(html.has-motion) .rule--right,
+:global(html.has-motion) .axis--y {
+  animation: draw-y calc(22 * var(--f)) var(--ease-expo) both;
+}
+
+/* the outer frame follows the centre axes by two frames */
+:global(html.has-motion) .rule {
+  animation-delay: calc(2 * var(--f));
+}
+
+:global(html.has-motion) .corner {
+  animation: strike calc(8.4 * var(--f)) steps(1, end) calc(14 * var(--f)) both;
+}
+
+:global(html.has-motion) .corner--tr,
+:global(html.has-motion) .corner--bl {
+  animation-delay: calc(16 * var(--f));
+}
+
+:global(html.has-motion) .emblem__ring {
+  animation:
+    strike calc(8.4 * var(--f)) steps(1, end) calc(6 * var(--f)) both,
+    spin 48s linear infinite;
+}
+
+:global(html.has-motion) .emblem__ghost path {
+  /* per-path delays are set inline (staggered by 2 frames) */
+  animation: draw-stroke calc(18 * var(--f)) var(--ease-quart) both;
+}
+
+:global(html.has-motion) .rail {
+  animation: strike calc(8.4 * var(--f)) steps(1, end) calc(16 * var(--f)) both;
+}
+
+:global(html.has-motion) .stage {
+  animation: strike calc(8.4 * var(--f)) steps(1, end) calc(18 * var(--f)) both;
+}
+
+:global(html.has-motion) .counter {
+  animation: strike calc(8.4 * var(--f)) steps(1, end) calc(12 * var(--f)) both;
+}
+
+:global(html.has-motion) .bar,
+:global(html.has-motion) .meter__label {
+  animation: strike calc(8.4 * var(--f)) steps(1, end) calc(15 * var(--f)) both;
+}
+
+@keyframes draw-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes draw-y {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes draw-stroke {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+/* lamp strike: each level holds until the next (steps), so it snaps rather than fades */
+@keyframes strike {
+  0% {
+    opacity: 0;
+  }
+  0.1% {
+    opacity: 1;
+  }
+  14% {
+    opacity: 0.05;
+  }
+  29% {
+    opacity: 0.9;
+  }
+  41% {
+    opacity: 0.1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 40rem) {
+  .rail {
+    display: none;
+  }
+
+  .stage {
+    top: calc(var(--inset) + 0.75rem);
+    right: calc(var(--inset) + 0.75rem);
+  }
+}

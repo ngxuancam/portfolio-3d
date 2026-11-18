@@ -1,52 +1,72 @@
 import { resume } from "@/content/resume";
-import { SectionHeader } from "@/components/ui/SectionHeader";
-import { Stitching } from "@/components/ui/Stitching";
+import { Chapter, chapterStyles as c } from "./Chapter";
 import styles from "./Experience.module.css";
 
-const monthFormatter = new Intl.DateTimeFormat("en", { month: "short", year: "numeric", timeZone: "UTC" });
-const formatMonth = (isoMonth: string) => monthFormatter.format(new Date(`${isoMonth}-01T00:00:00Z`));
+/** "2023-03" → "2023.03": log-style stamps read better in mono than month names. */
+const stamp = (isoMonth: string) => isoMonth.replace("-", ".");
 
+/** Chapter 03 — the flight log: one entry per role, newest first, on a vertical timeline. */
 export function Experience() {
-  return (
-    <section id="experience" className={styles.experience} aria-labelledby="experience-title">
-      <div className="u-container">
-        <SectionHeader index="03" eyebrow="Experience" title="Where I've shipped." titleId="experience-title" />
+  const { experience } = resume;
+  const earliest = experience.reduce((min, e) => (e.startDate < min ? e.startDate : min), experience[0]?.startDate ?? "");
 
-        <div className={styles["experience__timeline"]}>
-          <div className={styles["experience__rail"]} aria-hidden="true" />
-          <ol className={styles["experience__list"]}>
-          {resume.experience.map((job) => (
-            <li key={job.id} className={styles["experience__item"]}>
-              <article className={`${styles["experience__card"]} u-card`} data-reveal="slideLeft">
-                <Stitching />
-                <header className={styles["experience__header"]}>
-                  <p className={styles["experience__period"]}>
-                    <time dateTime={job.startDate}>{formatMonth(job.startDate)}</time>
-                    {" — "}
-                    {job.endDate ? <time dateTime={job.endDate}>{formatMonth(job.endDate)}</time> : "Present"}
-                  </p>
-                  <h3 className={styles["experience__role"]}>{job.role}</h3>
-                  <p className={styles["experience__company"]}>
-                    {job.company} <span aria-hidden="true">·</span> {job.location}
-                  </p>
-                </header>
-                <p className={styles["experience__summary"]}>{job.summary}</p>
-                <ul className={styles["experience__highlights"]}>
-                  {job.highlights.map((h) => (
-                    <li key={h}>{h}</li>
-                  ))}
-                </ul>
-                <ul className={styles["experience__stack"]} aria-label="Tech stack">
-                  {job.stack.map((tech) => (
-                    <li key={tech}>{tech}</li>
-                  ))}
-                </ul>
-              </article>
-            </li>
-          ))}
-          </ol>
-        </div>
-      </div>
-    </section>
+  return (
+    <Chapter
+      id="experience"
+      index={3}
+      label="Experience"
+      title="Experience"
+      readout={`${experience.length} entries · since ${earliest.slice(0, 4)}`}
+    >
+      <ol className={styles.log}>
+        {experience.map((job, i) => (
+          <li key={job.id} className={[styles.log__entry, job.endDate ? "" : styles["log__entry--current"], c.reveal].join(" ")}>
+            <span className={styles.log__node} aria-hidden="true" />
+
+            <p className={`u-label ${styles.log__dates}`}>
+              <span className={styles.log__seq} aria-hidden="true">
+                {String(experience.length - i).padStart(2, "0")}
+              </span>
+              <time dateTime={job.startDate}>{stamp(job.startDate)}</time>
+              <span aria-hidden="true"> — </span>
+              <span className="u-visually-hidden"> to </span>
+              {job.endDate ? (
+                <time dateTime={job.endDate}>{stamp(job.endDate)}</time>
+              ) : (
+                <span className={styles.log__now}>Present</span>
+              )}
+            </p>
+
+            <div className={styles.log__body}>
+              <h3 className={styles.log__role}>{job.role}</h3>
+              <p className={styles.log__where}>
+                {job.companyUrl ? (
+                  <a href={job.companyUrl} target="_blank" rel="noopener" className={styles.log__company}>
+                    {job.company}
+                    <span className="u-visually-hidden"> (opens in a new tab)</span>
+                  </a>
+                ) : (
+                  <span className={styles.log__company}>{job.company}</span>
+                )}
+                <span className={styles.log__place}> · {job.location}</span>
+              </p>
+              <p className={styles.log__summary}>{job.summary}</p>
+              <ul className={styles.log__highlights}>
+                {job.highlights.map((h) => (
+                  <li key={h}>{h}</li>
+                ))}
+              </ul>
+              <ul className={c.tags} aria-label={`Stack at ${job.company}`}>
+                {job.stack.map((s) => (
+                  <li key={s} className={c.tag}>
+                    {s}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </Chapter>
   );
 }

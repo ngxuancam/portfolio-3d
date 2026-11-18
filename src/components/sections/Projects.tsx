@@ -1,66 +1,83 @@
 import type { CSSProperties } from "react";
 import { resume } from "@/content/resume";
-import { SectionHeader } from "@/components/ui/SectionHeader";
-import { Stitching } from "@/components/ui/Stitching";
-import { HorizontalScroller } from "@/components/motion/HorizontalScroller";
+import { ButtonLink } from "@/components/ui/ButtonLink";
+import { Chapter, CornerMarks, chapterStyles as c } from "./Chapter";
 import styles from "./Projects.module.css";
 
+/** Chapter 04 — builds: one flat instrument card per project, newest first. */
 export function Projects() {
-  return (
-    <section id="projects" className={styles.projects} aria-labelledby="projects-title">
-      <div className="u-container">
-        <SectionHeader
-          index="04"
-          eyebrow="Selected work"
-          title="Things I've built."
-          titleId="projects-title"
-          lead="A few projects where performance, motion and architecture had to work together."
-        />
-      </div>
+  const { projects } = resume;
+  const years = projects.map((p) => p.year);
+  const span = years.length ? `${Math.min(...years)}–${Math.max(...years)}` : "";
 
-      <HorizontalScroller className={styles["projects__viewport"]} trackClassName={styles["projects__track"]}>
-        {resume.projects.map((project, i) => (
-          <article
-            key={project.id}
-            className={`${styles["projects__card"]} u-card`}
-            style={{ "--card-accent": project.accent } as CSSProperties}
-            data-card
-            data-cursor
-          >
-            <Stitching />
-            <div className={styles["projects__card-top"]}>
-              <span className={styles["projects__card-index"]}>{String(i + 1).padStart(2, "0")}</span>
-              <span className={styles["projects__card-year"]}>{project.year}</span>
-            </div>
-            <div className={styles["projects__card-art"]} aria-hidden="true">
-              <span className={styles["projects__card-glyph"]}>{project.name.charAt(0)}</span>
-            </div>
-            <h3 className={styles["projects__card-title"]}>{project.name}</h3>
-            <p className={styles["projects__card-tagline"]}>{project.tagline}</p>
-            <p className={styles["projects__card-text"]}>{project.description}</p>
-            <p className={styles["projects__card-outcome"]}>{project.outcome}</p>
-            <ul className={styles["projects__card-stack"]} aria-label="Tech stack">
-              {project.stack.map((tech) => (
-                <li key={tech}>{tech}</li>
-              ))}
-            </ul>
-            {(project.url || project.repoUrl) && (
-              <p className={styles["projects__card-links"]}>
-                {project.url && (
-                  <a href={project.url} target="_blank" rel="noopener" aria-label={`${project.name}: live site`}>
-                    Live <span aria-hidden="true">↗</span>
-                  </a>
-                )}
-                {project.repoUrl && (
-                  <a href={project.repoUrl} target="_blank" rel="noopener" aria-label={`${project.name}: source code`}>
-                    Source <span aria-hidden="true">↗</span>
-                  </a>
-                )}
-              </p>
-            )}
-          </article>
-        ))}
-      </HorizontalScroller>
-    </section>
+  return (
+    <Chapter id="projects" index={4} label="Projects" title="Selected projects" readout={`${projects.length} builds · ${span}`}>
+      <ul className={styles.projects}>
+        {projects.map((project, i) => {
+          const code = String(i + 1).padStart(2, "0");
+          const titleId = `project-${project.id}`;
+          return (
+            <li key={project.id} className={c.reveal}>
+              <article className={styles.card} aria-labelledby={titleId} style={{ "--accent": project.accent } as CSSProperties}>
+                <CornerMarks />
+
+                {/* No screenshots in the data, so the visual is a generated "schematic plate":
+                    the project's accent on a hairline grid, with its log code and year. */}
+                <div className={styles.card__media} aria-hidden="true">
+                  <div className={styles.card__plate}>
+                    <span className={styles.card__code}>{code}</span>
+                    <span className={`u-label ${styles.card__plateMeta}`}>
+                      {project.id} · {project.year}
+                    </span>
+                    <span className={styles.card__cross} />
+                  </div>
+                </div>
+
+                <div className={styles.card__body}>
+                  <p className={`u-label ${styles.card__meta}`}>
+                    <span className={styles.card__swatch} aria-hidden="true" />
+                    <span>{project.year}</span>
+                    <span aria-hidden="true">/</span>
+                    <span>{project.tagline}</span>
+                  </p>
+                  <h3 id={titleId} className={styles.card__name}>
+                    {project.name}
+                  </h3>
+                  <p className={styles.card__desc}>{project.description}</p>
+
+                  <div className={styles.card__outcome}>
+                    <span className={`u-label ${c.key}`}>Outcome</span>
+                    <p>{project.outcome}</p>
+                  </div>
+
+                  <ul className={c.tags} aria-label={`${project.name} stack`}>
+                    {project.stack.map((s) => (
+                      <li key={s} className={c.tag}>
+                        {s}
+                      </li>
+                    ))}
+                  </ul>
+
+                  {(project.url || project.repoUrl) && (
+                    <div className={styles.card__actions}>
+                      {project.url && (
+                        <ButtonLink href={project.url} variant="solid" external>
+                          Live<span className="u-visually-hidden"> site for {project.name} (opens in a new tab)</span>
+                        </ButtonLink>
+                      )}
+                      {project.repoUrl && (
+                        <ButtonLink href={project.repoUrl} external>
+                          Source<span className="u-visually-hidden"> code for {project.name} (opens in a new tab)</span>
+                        </ButtonLink>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </article>
+            </li>
+          );
+        })}
+      </ul>
+    </Chapter>
   );
 }

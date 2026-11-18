@@ -1,59 +1,61 @@
 import { resume } from "@/content/resume";
-import { SectionHeader } from "@/components/ui/SectionHeader";
-import { CountUp } from "@/components/motion/CountUp";
-import { Stitching } from "@/components/ui/Stitching";
+import { Chapter, chapterStyles as c } from "./Chapter";
+import { CountUp } from "./CountUp";
 import styles from "./About.module.css";
 
+const year = (isoMonth: string) => isoMonth.slice(0, 4);
+
+/** Chapter 01 — who: the summary, the facts sheet and the headline metrics. */
 export function About() {
   const { basics, metrics, languages, education } = resume;
+  const { city, region, countryCode } = basics.location;
+  const place = city === region ? `${city}, ${countryCode}` : `${city}, ${region}, ${countryCode}`;
 
   return (
-    <section id="about" className={styles.about} aria-labelledby="about-title">
-      <div className="u-container">
-        <SectionHeader index="01" eyebrow="About" title="Engineering that feels effortless." titleId="about-title" />
+    <Chapter
+      id="about"
+      index={1}
+      label="About"
+      title="About"
+      readout={`${metrics.length} readings · ${languages.length} languages`}
+    >
+      <p className={`${styles.about__summary} ${c.reveal}`}>{basics.summary}</p>
 
-        <div className={styles["about__grid"]}>
-          <p className={styles["about__summary"]} data-reveal="rise">
-            {basics.summary}
-          </p>
-
-          <div className={`${styles["about__facts-card"]} u-card`}>
-            <Stitching />
-            <dl className={styles["about__facts"]}>
-            <div className={styles["about__fact"]} data-reveal="rise">
-              <dt>Based in</dt>
-              <dd>
-                {basics.location.city}, {basics.location.countryCode}
-              </dd>
-            </div>
-            <div className={styles["about__fact"]} data-reveal="rise">
-              <dt>Languages</dt>
-              <dd>{languages.map((l) => `${l.language} (${l.fluency})`).join(" · ")}</dd>
-            </div>
-            {education.map((e) => (
-              <div key={e.institution} className={styles["about__fact"]} data-reveal="rise">
-                <dt>Education</dt>
-                <dd>
-                  {e.studyType}, {e.area} — {e.institution}
-                </dd>
-              </div>
-            ))}
-            </dl>
-          </div>
+      <dl className={`${styles.about__facts} ${c.reveal}`}>
+        <div className={styles.about__fact}>
+          <dt className={`u-label ${c.key}`}>Location</dt>
+          <dd>{place}</dd>
         </div>
-
-        <div className={`${styles["about__metrics-card"]} u-card`}>
-          <Stitching />
-          <ul className={styles["about__metrics"]}>
-          {metrics.map((metric) => (
-            <li key={metric.label} className={styles["about__metric"]} data-reveal="scale">
-              <CountUp value={metric.value} suffix={metric.suffix} className={styles["about__metric-value"]} />
-              <span className={styles["about__metric-label"]}>{metric.label}</span>
-            </li>
+        <div className={styles.about__fact}>
+          <dt className={`u-label ${c.key}`}>Languages</dt>
+          {languages.map((l) => (
+            <dd key={l.language}>
+              {l.language} <span className={styles.about__muted}>· {l.fluency}</span>
+            </dd>
           ))}
-          </ul>
         </div>
-      </div>
-    </section>
+        <div className={styles.about__fact}>
+          <dt className={`u-label ${c.key}`}>Education</dt>
+          {education.map((e) => (
+            <dd key={e.institution + e.startDate}>
+              {e.studyType}, {e.area}
+              <span className={styles.about__muted}>
+                {" "}
+                · {e.institution} · {year(e.startDate)}–{year(e.endDate)}
+              </span>
+            </dd>
+          ))}
+        </div>
+      </dl>
+
+      <ul className={styles.about__metrics} aria-label="Key metrics">
+        {metrics.map((m) => (
+          <li key={m.label} className={`${styles.about__metric} ${c.reveal}`}>
+            <CountUp value={m.value} suffix={m.suffix} className={styles.about__value} />
+            <span className={styles.about__label}>{m.label}</span>
+          </li>
+        ))}
+      </ul>
+    </Chapter>
   );
 }

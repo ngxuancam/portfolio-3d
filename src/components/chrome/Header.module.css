@@ -1,0 +1,373 @@
+/* HUD bar, mobile menu and side rails. Breakpoint: 56rem (nav ↔ menu), 64rem (rails). */
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.header__bar {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  height: 3.75rem;
+  padding-inline: var(--gutter);
+  border-bottom: 1px solid var(--c-rule);
+}
+
+/* ───────────── Mark ───────────── */
+
+.mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  padding-block: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-decoration: none;
+  color: var(--c-ink);
+}
+
+/* a small square "power" light ahead of the initials */
+.mark::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  background: var(--c-signal);
+}
+
+/* ───────────── Nav ───────────── */
+
+.nav {
+  position: relative;
+  margin-left: auto;
+}
+
+.nav__list {
+  display: flex;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav__link {
+  display: inline-flex;
+  gap: 0.6em;
+  padding: 0.75rem 0.7rem;
+  color: var(--c-ink-2);
+  text-decoration: none;
+  transition: color calc(8 * var(--f)) var(--ease-cutout);
+}
+
+.nav__link:hover,
+.nav__link[aria-current] {
+  color: var(--c-ink);
+  transition-duration: calc(4 * var(--f));
+  transition-timing-function: var(--ease-ignite);
+}
+
+.nav__index {
+  color: var(--c-ink-3);
+}
+
+.nav__link[aria-current] .nav__index {
+  color: var(--c-signal-2);
+}
+
+/* 1px-wide bar scaled to the link width by script; sits on the header's bottom rule */
+.nav__indicator {
+  position: absolute;
+  left: 0;
+  bottom: calc((3.75rem - 100%) / -2 - 1px);
+  width: 1px;
+  height: 2px;
+  background: var(--c-signal);
+  transform-origin: 0 50%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.readout {
+  min-width: 15ch;
+  color: var(--c-ink-3);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ───────────── Menu toggle ───────────── */
+
+.toggle {
+  display: none;
+  align-items: center;
+  gap: 0.9em;
+  margin-left: auto;
+  padding: 0.6rem 0;
+  border: 0;
+  background: none;
+  color: var(--c-ink);
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+.toggle__icon {
+  position: relative;
+  width: 18px;
+  height: 9px;
+}
+
+.toggle__icon > span {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  /* stepped, like everything mechanical: lines snap toward the cross rather than glide */
+  transition:
+    translate calc(6 * var(--f)) var(--ease-ignite),
+    rotate calc(6 * var(--f)) var(--ease-ignite);
+}
+
+.toggle__icon > span:first-child {
+  top: 0;
+}
+
+.toggle__icon > span:last-child {
+  bottom: 0;
+}
+
+.header[data-open] .toggle__icon > span:first-child {
+  translate: 0 4px;
+  rotate: 45deg;
+}
+
+.header[data-open] .toggle__icon > span:last-child {
+  translate: 0 -4px;
+  rotate: -45deg;
+}
+
+/* ───────────── Mobile panel ───────────── */
+
+.panel {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: calc(3.75rem + 2rem) var(--gutter) var(--gutter);
+  background: var(--c-panel);
+  animation: strike calc(8.4 * var(--f)) steps(1, end) both;
+}
+
+.panel[hidden] {
+  display: none;
+}
+
+.panel__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--c-rule);
+}
+
+.panel__link {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding-block: 0.9rem;
+  border-bottom: 1px solid var(--c-rule);
+  font-family: var(--font-sans);
+  font-size: clamp(2rem, 9vw, 3rem);
+  font-weight: 200;
+  letter-spacing: var(--tracking-display);
+  text-transform: none;
+  text-decoration: none;
+  color: var(--c-ink);
+}
+
+.panel__index {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: var(--tracking-label);
+  color: var(--c-signal-2);
+}
+
+.panel__meta {
+  color: var(--c-ink-3);
+}
+
+/* ───────────── Side rails ───────────── */
+
+.rails {
+  display: none;
+}
+
+.rail {
+  position: fixed;
+  top: 50%;
+  z-index: 40;
+  translate: 0 -50%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: var(--tracking-label);
+  color: var(--c-ink-3);
+  pointer-events: none;
+}
+
+.rail--left {
+  left: calc(var(--gutter) / 2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  translate: -50% -50%;
+}
+
+.meter {
+  position: relative;
+  display: block;
+  width: 1px;
+  height: 22vh;
+  background: var(--c-rule);
+}
+
+.meter__fill {
+  position: absolute;
+  inset: 0;
+  background: var(--c-signal);
+  transform-origin: 50% 0;
+  transform: scaleY(0);
+}
+
+.meter__value {
+  writing-mode: vertical-rl;
+  rotate: 180deg;
+  font-variant-numeric: tabular-nums;
+}
+
+.rail--right {
+  right: calc(var(--gutter) / 2);
+  display: grid;
+  gap: 0.75rem;
+  translate: 50% -50%;
+}
+
+.tick {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.tick__index {
+  opacity: 0;
+  transition: opacity calc(8 * var(--f)) var(--ease-cutout);
+}
+
+.tick__line {
+  width: 6px;
+  height: 1px;
+  background: var(--c-ink-3);
+  transition:
+    width calc(8 * var(--f)) var(--ease-cutout),
+    background-color calc(8 * var(--f)) var(--ease-cutout);
+}
+
+.tick[data-active] .tick__index {
+  opacity: 1;
+  color: var(--c-signal-2);
+  transition-duration: calc(4 * var(--f));
+  transition-timing-function: var(--ease-ignite);
+}
+
+.tick[data-active] .tick__line {
+  width: 14px;
+  background: var(--c-signal);
+  transition-duration: calc(4 * var(--f));
+  transition-timing-function: var(--ease-ignite);
+}
+
+/* ───────────── Entrance: strikes on as the loader veil lifts ───────────── */
+
+:global(html.has-motion[data-loaded]) .header__bar > * {
+  animation: strike calc(8.4 * var(--f)) steps(1, end) both;
+}
+
+:global(html.has-motion[data-loaded]) .header__bar > :nth-child(2) {
+  animation-delay: calc(3 * var(--f));
+}
+
+:global(html.has-motion[data-loaded]) .header__bar > :nth-child(3) {
+  animation-delay: calc(6 * var(--f));
+}
+
+:global(html.has-motion[data-loaded]) .rail {
+  animation: strike calc(8.4 * var(--f)) steps(1, end) calc(8 * var(--f)) both;
+}
+
+@keyframes strike {
+  0% {
+    opacity: 0;
+  }
+  0.1% {
+    opacity: 1;
+  }
+  14% {
+    opacity: 0.05;
+  }
+  29% {
+    opacity: 0.9;
+  }
+  41% {
+    opacity: 0.1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* ───────────── Breakpoints ───────────── */
+
+@media (max-width: 55.99rem) {
+  .nav,
+  .readout {
+    display: none;
+  }
+
+  .toggle {
+    display: inline-flex;
+  }
+}
+
+@media (min-width: 64rem) {
+  .rails {
+    display: block;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav__link,
+  .toggle__icon > span,
+  .tick__index,
+  .tick__line {
+    transition: none;
+  }
+
+  .panel {
+    animation: none;
+  }
+}

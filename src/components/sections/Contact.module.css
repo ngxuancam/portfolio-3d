@@ -1,105 +1,80 @@
-.contact {
-  position: relative;
-  padding-block: var(--space-section);
-  border-top: 1px solid var(--color-line);
-  overflow: clip;
-}
-
-.contact__inner {
-  display: grid;
-  justify-items: center;
-  gap: 2.25rem;
-  text-align: center;
-}
-
-.contact__eyebrow {
-  display: inline-flex;
+.contact__status {
+  display: flex;
   align-items: center;
-  gap: 1rem;
-  font-size: 0.72rem;
-  font-weight: 400;
-  letter-spacing: var(--tracking-label);
-  text-transform: uppercase;
-  color: var(--color-text-muted);
+  gap: 0.875rem;
 }
 
-.contact__eyebrow span {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 1.05rem;
-  letter-spacing: 0.04em;
-  text-transform: none;
-  color: var(--brass-ink);
+.contact__status p {
+  color: var(--c-ink);
 }
 
-.contact__title {
-  max-width: 14ch;
-  font-size: clamp(3.2rem, 8.5vw, 7.2rem);
-  line-height: 0.98;
-}
-
-.contact__title-em {
-  font-style: italic;
-  color: var(--deep-burgundy);
-}
-
-/* flat burgundy block, brass hairline on hover — no shadow */
-.contact__mail {
+/* the address is the hero of the chapter: display weight, wraps anywhere on narrow phones */
+.contact__email {
   display: inline-block;
-  padding: 1.15rem 2.25rem;
-  border: 1px solid var(--deep-burgundy);
-  border-radius: var(--radius-pill);
-  background: var(--deep-burgundy);
-  color: var(--ecru);
-  font-size: clamp(0.95rem, 2vw, 1.2rem);
-  font-weight: 400;
-  letter-spacing: 0.04em;
-  word-break: break-all;
+  max-width: 100%;
+  /* sized to the 7-column text column on wide screens, so it fits on one line there */
+  font-size: clamp(1.5rem, 5.4vw, 3.25rem);
+  font-weight: 200;
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+  padding-bottom: 0.1em;
+  /* break only at the <wbr> after the name; "anywhere" is the last resort on tiny phones */
+  overflow-wrap: break-word;
+  color: var(--c-ink);
+  text-decoration: none;
+  /* hairline underline that ignites to the signal colour on hover */
+  background: linear-gradient(var(--c-rule-2), var(--c-rule-2)) left bottom / 100% 1px no-repeat;
   transition:
-    background-color 0.4s,
-    border-color 0.4s;
+    color calc(8 * var(--f)) var(--ease-cutout),
+    background-size calc(8 * var(--f)) var(--ease-cutout);
 }
 
-.contact__mail:hover {
-  border-color: var(--brass);
-  background: var(--deep-burgundy-hover);
+.contact__email:hover {
+  color: var(--c-signal-2);
+  background-image: linear-gradient(var(--c-signal), var(--c-signal));
+  transition-duration: calc(4 * var(--f));
+  transition-timing-function: var(--ease-ignite);
 }
 
-.contact__socials {
+.contact__profiles {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.5rem 2.25rem;
+  gap: 0.625rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.contact__social {
-  position: relative;
-  font-size: 0.78rem;
-  font-weight: 400;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--color-text-muted);
-  transition: color 0.3s;
+.contact__handle {
+  opacity: 0.6;
+  text-transform: none;
+  letter-spacing: 0.04em;
 }
 
-.contact__social::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -0.3rem;
-  height: 1px;
-  background: var(--brass);
-  transform: scaleX(0);
-  transform-origin: right;
-  transition: transform 0.5s var(--ease-out-expo);
+.contact__end {
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--c-rule);
 }
 
-.contact__social:hover {
-  color: var(--deep-burgundy);
+.contact__end > span {
+  color: var(--c-signal);
+  margin-right: 0.5rem;
 }
 
-.contact__social:hover::after {
-  transform: scaleX(1);
-  transform-origin: left;
+@media (prefers-reduced-motion: reduce) {
+  .contact__email {
+    transition: none;
+  }
+}
+
+@media (min-width: 64rem) {
+  .contact__email {
+    font-size: clamp(2rem, 3.4vw, 3.25rem);
+  }
+}
+
+@media (max-width: 22rem) {
+  .contact__email {
+    overflow-wrap: anywhere;
+  }
 }

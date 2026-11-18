@@ -1,67 +1,85 @@
 import type { CSSProperties } from "react";
 import { resume } from "@/content/resume";
-import { POSTER_MEDIA } from "@/lib/three/stageMedia";
-import { MagneticLink } from "@/components/motion/MagneticLink";
+import { ButtonLink } from "@/components/ui/ButtonLink";
+import { CornerMarks, chapterStyles } from "./Chapter";
 import styles from "./Hero.module.css";
 
-/** 1×1 transparent GIF: wide viewports get this instead of the poster (no download). */
-const BLANK_PIXEL = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+/** Stagger slot for the entrance: each element reads `--i` to offset its delay by a few frames. */
+const slot = (i: number) => ({ "--i": i }) as CSSProperties;
 
-/** "Est." year for the script tagline — the first year in the experience history */
-const established = Math.min(...resume.experience.map((job) => Number(job.startDate.slice(0, 4))));
-
+/**
+ * Chapter 00 — the title card. Static server markup; the entrance is pure CSS that waits for the
+ * loader to lift (`html[data-loaded]`) and only for visitors flagged `has-motion` by the head
+ * script, so no-JS and reduced-motion visitors get the finished page on first paint.
+ */
 export function Hero() {
-  const { basics } = resume;
+  const { basics, updatedAt } = resume;
+  const words = basics.name.split(" ");
+  const place = `${basics.location.city}, ${basics.location.countryCode}`;
 
   return (
-    <section id="top" className={styles.hero} aria-labelledby="hero-title">
-      {/*
-        Phones: a still of the 3D bust (captured from the scene at the narrow framing) is in
-        the first paint, and the WebGL stage only loads on first interaction — then it
-        replaces the poster seamlessly. Wide screens never request the poster.
-      */}
-      <picture className={styles["hero__poster"]}>
-        <source media={POSTER_MEDIA} srcSet="/hero-poster.webp" width={424} height={603} />
-        <img src={BLANK_PIXEL} alt="" width={424} height={603} decoding="async" fetchPriority="high" />
-      </picture>
-      {/* CSS-only entrance: the copy is in the first paint (LCP), no JS needed to reveal it */}
-      <div className={`${styles["hero__inner"]} u-container`} data-hero-copy>
-        <div className={`${styles["hero__meta"]} ${styles["hero__enter"]}`} style={{ "--i": 0 } as CSSProperties}>
-          <p className={`${styles["hero__status"]} u-glass u-glass--lens`}>
-            <span className={styles["hero__status-dot"]} aria-hidden="true" />
-            {basics.availability}
+    <section id="top" data-chapter aria-labelledby="top-title" className={styles.hero}>
+      <div className={`u-container ${styles.hero__frame}`}>
+        <CornerMarks className={styles.hero__corners} />
+
+        <div className={styles.hero__head} aria-hidden="true">
+          <span className={`u-label ${styles.hero__index} ${styles.enterStrike}`} style={slot(0)}>
+            <span className={styles.hero__num}>00</span> / Log start
+          </span>
+          <span className={`${styles.hero__rule} ${styles.enterRule}`} />
+          <span className={`u-label ${styles.hero__readout} ${styles.enterStrike}`} style={slot(1)}>
+            Rev {updatedAt}
+          </span>
+        </div>
+
+        <div className={styles.hero__body}>
+          <p className={`u-label ${styles.hero__meta} ${styles.enterStrike}`} style={slot(1)}>
+            <span>{basics.label}</span>
+            <span className={styles.hero__sep} aria-hidden="true">
+              /
+            </span>
+            <span>{place}</span>
           </p>
-          <p className={`${styles["hero__tagline"]} u-script`}>Est. {established}</p>
+
+          <h1 id="top-title" className={styles.hero__name}>
+            {words.map((word, i) => (
+              // real spaces between the spans keep the accessible name "First Middle Last"
+              <span key={word + i}>
+                <span className={`${styles.hero__word} ${styles.enter}`} style={slot(2 + i)}>
+                  {word}
+                </span>
+                {i < words.length - 1 ? " " : null}
+              </span>
+            ))}
+          </h1>
+
+          <p className={`${styles.hero__headline} ${styles.enter}`} style={slot(2 + words.length)}>
+            {basics.headline}
+          </p>
+
+          <p className={`u-label ${styles.hero__status} ${styles.enterStrike}`} style={slot(3 + words.length)}>
+            <span className={chapterStyles.signal} aria-hidden="true" />
+            <span>
+              <span className="u-visually-hidden">Status: </span>
+              {basics.availability}
+            </span>
+          </p>
+
+          <div className={`${styles.hero__actions} ${styles.enter}`} style={slot(4 + words.length)}>
+            <ButtonLink href="#projects" variant="solid">
+              View work
+            </ButtonLink>
+            <ButtonLink href="#contact">Get in touch</ButtonLink>
+          </div>
         </div>
 
-        <h1 id="hero-title" className={styles["hero__title"]}>
-          {basics.name}
-        </h1>
-
-        <p className={`${styles["hero__role"]} ${styles["hero__enter"]}`} style={{ "--i": 2 } as CSSProperties}>
-          {basics.label}
-          <span className={styles["hero__role-sep"]} aria-hidden="true" />
-          {basics.location.city}, Vietnam
-        </p>
-
-        <p className={`${styles["hero__lead"]} ${styles["hero__enter"]}`} style={{ "--i": 3 } as CSSProperties}>
-          {basics.headline}
-        </p>
-
-        <div className={`${styles["hero__actions"]} ${styles["hero__enter"]}`} style={{ "--i": 4 } as CSSProperties}>
-          <MagneticLink href="#projects" className={`${styles["hero__button"]} ${styles["hero__button--primary"]}`}>
-            View selected work
-          </MagneticLink>
-          <MagneticLink href={`mailto:${basics.email}`} className={`${styles["hero__button"]} u-glass u-glass--lens`}>
-            Get in touch
-          </MagneticLink>
-        </div>
+        <a href="#about" className={`u-label ${styles.hero__cue} ${styles.enterStrike}`} style={slot(6 + words.length)}>
+          <span className={styles.hero__cueLine} aria-hidden="true" />
+          <span>
+            Scroll<span className="u-visually-hidden"> to the About chapter</span>
+          </span>
+        </a>
       </div>
-
-      <a href="#about" className={styles["hero__scroll-hint"]}>
-        <span className="u-visually-hidden">Scroll to about section</span>
-        <span className={styles["hero__scroll-line"]} aria-hidden="true" />
-      </a>
     </section>
   );
 }

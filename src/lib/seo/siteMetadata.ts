@@ -43,8 +43,8 @@ export function createSiteMetadata(): Metadata {
 }
 
 export const siteViewport: Viewport = {
-  themeColor: "#fdfbf7",
-  colorScheme: "light",
+  themeColor: "#050607",
+  colorScheme: "dark",
   width: "device-width",
   initialScale: 1,
 };

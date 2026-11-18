@@ -1,277 +1,254 @@
 .hero {
   position: relative;
   min-height: 100svh;
-  display: grid;
-  align-items: center;
-  isolation: isolate;
-  overflow: clip;
+  display: flex;
 }
 
-/*
- * Poster placement measured on the capture (412×915 viewport): the bust spans
- * 6.487%–50.44% of the viewport height, centred horizontally. The narrow camera has a
- * fixed vertical field of view, so these vh-based numbers hold on any phone.
- */
-.hero__poster {
-  display: none;
-}
-
-@media (max-aspect-ratio: 11/10) {
-  .hero__poster {
-    display: block;
-    position: absolute;
-    top: 6.487svh;
-    left: 50%;
-    z-index: 0;
-    height: 43.95svh;
-    translate: -50% 0;
-    pointer-events: none;
-    transition: opacity 0.6s var(--ease-out-expo);
-  }
-
-  .hero__poster img {
-    width: auto;
-    height: 100%;
-    max-width: none;
-  }
-
-  :global(html[data-stage="ready"]) .hero__poster {
-    opacity: 0;
-  }
-}
-
-.hero__inner {
+.hero__frame {
   position: relative;
-  z-index: 1;
-  display: grid;
-  gap: 1.75rem;
-  padding-block: 9rem 7rem;
-  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  /* clear the fixed header at the top, leave room for the scroll cue at the bottom */
+  padding-block: clamp(5.5rem, 12vh, 7.5rem) clamp(1.5rem, 4vh, 2.5rem);
 }
 
-.hero__inner a {
-  pointer-events: auto;
+.hero__corners {
+  inset: clamp(4.5rem, 10vh, 6rem) var(--gutter) clamp(1rem, 2.5vh, 1.5rem);
+}
+
+.hero__head {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.hero__index {
+  flex: none;
+  color: var(--c-ink);
+}
+
+.hero__num {
+  color: var(--c-signal-2);
+}
+
+.hero__rule {
+  flex: 1;
+  height: 1px;
+  background: var(--c-rule);
+  transform-origin: left center;
+}
+
+.hero__readout {
+  flex: none;
+}
+
+@media (max-width: 40rem) {
+  .hero__readout {
+    display: none;
+  }
+}
+
+/* the content block sits low in the frame, like a caption under the ship */
+.hero__body {
+  display: grid;
+  gap: clamp(1.25rem, 3vh, 2rem);
+  margin-top: auto;
+  padding-block: 3rem 2rem;
+  max-width: 100%;
+}
+
+@media (min-width: 64rem) {
+  .hero__body {
+    /* columns 1–7 of 12 */
+    width: calc((100% - 11 * 1.5rem) / 12 * 7 + 6 * 1.5rem);
+  }
 }
 
 .hero__meta {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 1rem 1.5rem;
+  gap: 0.25rem 0.75rem;
+  color: var(--c-ink);
+}
+
+.hero__sep {
+  color: var(--c-ink-3);
+}
+
+.hero__name {
+  font-size: clamp(3.25rem, 9vw, 8.5rem);
+  font-weight: 200;
+  letter-spacing: -0.045em;
+  /* tight leading, but descenders get explicit room so nothing is clipped */
+  line-height: 0.98;
+  padding-bottom: 0.08em;
+  /* a stacked name: roughly one word per line on wide screens */
+  max-width: 9ch;
+  font-variant-numeric: tabular-nums;
+}
+
+.hero__word {
+  display: inline-block;
+}
+
+.hero__headline {
+  max-width: 34ch;
+  font-size: clamp(1.125rem, 2vw, 1.5rem);
+  font-weight: 300;
+  line-height: 1.4;
+  color: var(--c-ink-2);
 }
 
 .hero__status {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  color: var(--c-ink);
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+}
+
+/* scroll cue: a hairline that keeps dropping, plus a mono label */
+.hero__cue {
   display: inline-flex;
   align-items: center;
-  gap: 0.65rem;
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius-pill);
-  font-size: 0.7rem;
-  font-weight: 400;
-  letter-spacing: var(--tracking-label);
-  text-transform: uppercase;
-  color: var(--oxford-navy);
+  gap: 0.875rem;
+  align-self: flex-start;
+  padding-block: 0.5rem;
+  text-decoration: none;
+  color: var(--c-ink-2);
+  transition: color calc(4 * var(--f)) var(--ease-ignite);
 }
 
-.hero__status-dot {
-  width: 0.4rem;
-  height: 0.4rem;
-  border-radius: 50%;
-  background: var(--deep-burgundy);
+.hero__cue:hover {
+  color: var(--c-ink);
 }
 
-.hero__tagline {
-  font-size: 1.6rem;
-  line-height: 1;
+.hero__cueLine {
+  position: relative;
+  width: 1px;
+  height: 2.5rem;
+  overflow: hidden;
+  background: var(--c-rule);
 }
 
-.hero__title {
-  max-width: 11ch;
-  /* transform only (never opacity), so the headline counts as painted at first paint */
-  animation: hero-title-in 1.4s var(--ease-out-expo) both;
-  font-size: clamp(3.8rem, 10.5vw, 9.4rem);
-  font-weight: 500;
-  line-height: 0.92;
-  letter-spacing: var(--tracking-display);
+.hero__cueLine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--c-signal);
+  translate: 0 -100%;
 }
 
-/* staggered entrance for the supporting copy; --i is the order */
-.hero__enter {
-  animation: hero-rise 1.1s var(--ease-out-expo) both;
-  animation-delay: calc(0.15s + var(--i, 0) * 0.1s);
+@media (prefers-reduced-motion: no-preference) {
+  .hero__cueLine::after {
+    animation: cue-drop 2.4s var(--ease-expo) infinite;
+  }
 }
 
-@keyframes hero-title-in {
-  from {
-    transform: translateY(0.35em);
+@keyframes cue-drop {
+  0% {
+    translate: 0 -100%;
+  }
+  45% {
+    translate: 0 0;
+  }
+  100% {
+    translate: 0 100%;
+  }
+}
+
+/* ───────────── Entrance ─────────────
+ * Hidden only when the head script has flagged a motion-capable visitor. Plays when the loader
+ * sets html[data-loaded]. If that attribute never arrives (loader error, blocked script), the
+ * failsafe animation shows everything after 9 s so the title card can never stay blank.
+ */
+
+:global(html.has-motion) .enter,
+:global(html.has-motion) .enterStrike {
+  opacity: 0;
+  animation: hero-failsafe 1ms 9s forwards;
+}
+
+:global(html.has-motion) .enterRule {
+  scale: 0 1;
+  animation: hero-failsafe 1ms 9s forwards;
+}
+
+:global(html.has-motion[data-loaded]) .enter {
+  animation: hero-rise calc(30 * var(--f)) var(--ease-expo) calc(var(--i, 0) * 3 * var(--f)) both;
+}
+
+/* chrome labels "strike" on with the stepped lamp flicker (≈ 280 ms) */
+:global(html.has-motion[data-loaded]) .enterStrike {
+  animation: hero-strike calc(9 * var(--f)) step-end calc(var(--i, 0) * 3 * var(--f) + 4 * var(--f)) both;
+}
+
+:global(html.has-motion[data-loaded]) .enterRule {
+  animation: hero-draw calc(24 * var(--f)) var(--ease-quart) calc(2 * var(--f)) both;
+}
+
+/* safety net if the reduced-motion preference flips after the head script ran */
+@media (prefers-reduced-motion: reduce) {
+  :global(html.has-motion) .enter,
+  :global(html.has-motion) .enterStrike,
+  :global(html.has-motion) .enterRule {
+    opacity: 1;
+    scale: 1;
+    animation: none;
+  }
+}
+
+@keyframes hero-failsafe {
+  to {
+    opacity: 1;
+    scale: 1;
   }
 }
 
 @keyframes hero-rise {
   from {
     opacity: 0;
-    transform: translateY(1.25rem);
+    translate: 0 0.35em;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
   }
 }
 
-.hero__role {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.25rem 0.9rem;
-  font-size: 0.74rem;
-  font-weight: 400;
-  letter-spacing: var(--tracking-label);
-  text-transform: uppercase;
-  color: var(--deep-burgundy);
-}
-
-.hero__role-sep {
-  width: 1.75rem;
-  height: 1px;
-  background: var(--brass);
-}
-
-.hero__lead {
-  max-width: 30rem;
-  font-size: clamp(1.1rem, 1.6vw, 1.3rem);
-  color: var(--color-text-muted);
-}
-
-.hero__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.hero__button {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.95rem 1.9rem;
-  border-radius: var(--radius-pill);
-  font-size: 0.8rem;
-  font-weight: 400;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--oxford-navy);
-  transition:
-    color 0.4s,
-    background-color 0.4s;
-}
-
-.hero__button:hover {
-  color: var(--deep-burgundy);
-}
-
-/* flat colour block — no gradient, no shadow */
-.hero__button--primary {
-  border: 1px solid var(--deep-burgundy);
-  background: var(--deep-burgundy);
-  color: var(--ecru);
-}
-
-.hero__button--primary:hover {
-  background: var(--deep-burgundy-hover);
-  color: var(--ecru);
-}
-
-.hero__scroll-hint {
-  position: absolute;
-  left: 50%;
-  bottom: 2.25rem;
-  z-index: 1;
-  width: 1px;
-  height: 4.5rem;
-  overflow: hidden;
-  background: var(--parchment-line);
-}
-
-.hero__scroll-line {
-  position: absolute;
-  inset: 0;
-  background: var(--brass);
-  animation: hero-scroll 2.4s var(--ease-out-expo) infinite;
-}
-
-@keyframes hero-scroll {
+@keyframes hero-draw {
   from {
-    transform: translateY(-100%);
+    scale: 0 1;
   }
   to {
-    transform: translateY(100%);
+    scale: 1 1;
   }
 }
 
-@media (max-width: 960px) {
-  /*
- * Poster placement measured on the capture (412×915 viewport): the bust spans
- * 6.487%–50.44% of the viewport height, centred horizontally. The narrow camera has a
- * fixed vertical field of view, so these vh-based numbers hold on any phone.
- */
-.hero__poster {
-  display: none;
-}
-
-@media (max-aspect-ratio: 11/10) {
-  .hero__poster {
-    display: block;
-    position: absolute;
-    top: 6.487svh;
-    left: 50%;
-    z-index: 0;
-    height: 43.95svh;
-    translate: -50% 0;
-    pointer-events: none;
-    transition: opacity 0.6s var(--ease-out-expo);
-  }
-
-  .hero__poster img {
-    width: auto;
-    height: 100%;
-    max-width: none;
-  }
-
-  :global(html[data-stage="ready"]) .hero__poster {
+@keyframes hero-strike {
+  0% {
     opacity: 0;
   }
-}
-
-.hero__inner {
-    align-self: end;
-    padding-block: 50svh 4rem;
+  4% {
+    opacity: 1;
   }
-}
-
-/*
- * As the hero scrolls away, its copy drifts up and fades behind the bursting bust —
- * a CSS view timeline on the hero section (exit 0% → 70% ≈ "top top" → "70% top").
- */
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .hero {
-      view-timeline: --hero block;
-    }
-
-    .hero__inner {
-      animation: hero-copy-out linear both;
-      animation-timeline: --hero;
-      animation-range: exit 0% exit 70%;
-    }
+  14% {
+    opacity: 0.05;
   }
-}
-
-@keyframes hero-copy-out {
-  to {
-    opacity: 0;
-    transform: translateY(-140px);
+  29% {
+    opacity: 0.9;
   }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero__scroll-line,
-  .hero__title,
-  .hero__enter {
-    animation: none;
+  41% {
+    opacity: 0.1;
+  }
+  55%,
+  100% {
+    opacity: 1;
   }
 }
