@@ -14,14 +14,15 @@ import {
 } from "postprocessing";
 import { useEffect, useMemo } from "react";
 import { HalfFloatType, Vector2 } from "three";
-import { GrainEffect } from "@/lib/three/GrainEffect";
+import { createSanitizePass } from "@/lib/three/sanitize";
 import type { Quality } from "@/lib/three/quality";
 import { useDisposeOnUnmount } from "./useDisposeOnUnmount";
 
 /**
  * Post chain on a half-float target so the HDR weld survives until bloom:
- * bloom (threshold just under the edge) → chromatic aberration (desktop) → neutral tone mapping
- * → vignette → 12 fps grain. All effects merge into ONE fullscreen pass after the bloom mips.
+ * sanitise (NaN/Inf guard) → bloom (threshold just under the edge) → chromatic aberration
+ * (desktop) → neutral tone mapping → vignette. No film grain: space reads clean and still.
+ * The effects merge into ONE fullscreen pass after the bloom mips.
  */
 export function Effects({ quality }: { quality: Quality }) {
   const gl = useThree((s) => s.gl);
@@ -36,6 +37,7 @@ export function Effects({ quality }: { quality: Quality }) {
       multisampling: quality.multisampling,
     });
     composer.addPass(new RenderPass(scene, camera));
+    composer.addPass(createSanitizePass());
     const effects: Effect[] = [
       new BloomEffect({
         mipmapBlur: true,
@@ -59,12 +61,13 @@ export function Effects({ quality }: { quality: Quality }) {
     effects.push(
       new ToneMappingEffect({ mode: ToneMappingMode.NEUTRAL }),
       new VignetteEffect({ offset: 0.32, darkness: 0.62 }),
-      new GrainEffect({ amount: quality.low ? 0.025 : 0.035, fps: 12 }),
     );
     composer.addPass(new EffectPass(camera, ...effects));
     return composer;
   }, [gl, scene, camera, quality.multisampling, quality.aberration, quality.low]);
 
+  // TEMP-DEBUG
+  if (typeof window !== "undefined") (window as unknown as Record<string, unknown>).__lab = { scene, camera, composer, gl };
   useDisposeOnUnmount(composer);
   useEffect(() => composer.setSize(size.width, size.height), [composer, size, dpr]);
 

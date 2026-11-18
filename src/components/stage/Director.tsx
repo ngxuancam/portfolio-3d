@@ -2,24 +2,23 @@
 
 import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
-import { FogExp2, MathUtils, PerspectiveCamera } from "three";
-import { progress } from "@/lib/loading/progress";
+import { MathUtils, PerspectiveCamera } from "three";
 import { signals } from "@/lib/scroll/signals";
 import type { Quality } from "@/lib/three/quality";
 import { shared, stage } from "@/lib/three/state";
-import { buildProgress, fogDensity, INTRO_SECONDS, shieldProgress, sweepThreshold } from "@/lib/three/timeline";
+import { buildActivity, buildProgress, shieldProgress, sweepThreshold, thrustLevel } from "@/lib/three/timeline";
 
-/** if the loader never sets data-loaded, start the intro this long after the stage is ready */
-const INTRO_FALLBACK_S = 3;
 /** scroll damping rate: wheel steps glide in ≈ 0.25 s */
 const SCROLL_DAMP = 4.5;
+/** steady glow shown instead of a live burn under prefers-reduced-motion */
+const STATIC_THRUST = 0.6;
 
 /**
  * Owns the timeline. Runs before everything else each frame (priority −1) and writes the shared
  * stage state + uniforms that the rest of the scene reads.
  */
 export function Director({ quality }: { quality: Quality }) {
-  const clock = useRef({ first: true, introStart: -1, readySince: -1, elapsed: 0 });
+  const clock = useRef({ first: true, elapsed: 0, ignited: false, ignitedAt: 0 });
 
   useFrame((state, rawDelta) => {
     // clamp: after a hidden tab or a long GC pause, glide rather than teleport
@@ -34,22 +33,34 @@ export function Director({ quality }: { quality: Quality }) {
 
     if (quality.reducedMotion) {
       stage.chapter = signals.chapter;
-      stage.intro = 1;
       stage.build = 1;
+      stage.activity = 0;
       stage.shield = 0;
+      stage.thrust = STATIC_THRUST;
+      stage.kick = 0;
+      stage.flicker = 1;
+      stage.shake = 0;
     } else {
-      shared.uTime.value += dt;
-      if (c.introStart < 0) {
-        if (progress.ready && c.readySince < 0) c.readySince = c.elapsed;
-        const lifted = document.documentElement.dataset.loaded !== undefined;
-        const fallback = c.readySince >= 0 && c.elapsed - c.readySince > INTRO_FALLBACK_S;
-        if (lifted || fallback) c.introStart = c.elapsed;
-      } else {
-        stage.intro = Math.min(1, (c.elapsed - c.introStart) / INTRO_SECONDS);
-      }
+      const t = (shared.uTime.value += dt);
       stage.chapter = MathUtils.damp(stage.chapter, signals.chapter, SCROLL_DAMP, dt);
-      stage.build = buildProgress(stage.intro, stage.chapter);
+      stage.build = buildProgress(stage.chapter);
+      stage.activity = buildActivity(stage.build);
       stage.shield = shieldProgress(stage.chapter);
+
+      // ignition is an EVENT (edge-triggered), so the kick plays once per arrival, not per frame
+      const level = thrustLevel(stage.chapter);
+      if (!c.ignited && level > 0.02) {
+        c.ignited = true;
+        c.ignitedAt = c.elapsed;
+      } else if (c.ignited && level < 0.005) {
+        c.ignited = false;
+      }
+      stage.kick = c.ignited ? Math.exp(-(c.elapsed - c.ignitedAt) * 3.2) : 0;
+      // the kick overshoots the burn: the engine catches hard, then settles
+      stage.thrust = level * (1 + 0.9 * stage.kick);
+      // two incommensurate sines + a random jitter: never periodic enough to read as a loop
+      stage.flicker = 0.9 + 0.07 * Math.sin(t * 53) * Math.sin(t * 31.7) + 0.06 * Math.random();
+      stage.shake = 0.06 * stage.kick * level + 0.004 * level;
     }
     shared.uThreshold.value = sweepThreshold(stage.build);
 
@@ -58,10 +69,6 @@ export function Director({ quality }: { quality: Quality }) {
     // narrow screens also get the page's 45 % scrim; this only takes the edge off the weld
     const dim = stage.narrow ? 0.85 : 1;
     shared.uDim.value = quality.reducedMotion || c.elapsed < 0.2 ? dim : MathUtils.damp(shared.uDim.value, dim, 4, dt);
-
-    const density = fogDensity(stage.chapter);
-    shared.uFogDensity.value = density;
-    if (state.scene.fog instanceof FogExp2) state.scene.fog.density = density;
 
     const camera = state.camera as PerspectiveCamera;
     const bufferHeight = state.size.height * state.viewport.dpr;

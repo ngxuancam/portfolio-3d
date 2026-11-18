@@ -2,20 +2,24 @@
 
 import { useFrame, useThree } from "@react-three/fiber";
 import { use, useEffect, useMemo, useRef } from "react";
-import { Color, Mesh, PointLight, Points } from "three";
+import { Color, Group, Mesh, Object3D, PointLight, Points, ShaderMaterial } from "three";
 import { progress } from "@/lib/loading/progress";
 import { createHologramMaterial, createHullMaterial, createHullPointsMaterial } from "@/lib/three/materials";
 import type { Quality } from "@/lib/three/quality";
 import { loadShip, sampleHull } from "@/lib/three/ship";
 import { trackCompile } from "@/lib/three/lifetime";
 import { shared, stage } from "@/lib/three/state";
+import { Thruster } from "./Thruster";
 import { useDisposeOnUnmount } from "./useDisposeOnUnmount";
 
 const reportModel = (fraction: number) => progress.stage("model", fraction);
 const EDGE_LIGHT = new Color("#ff7a2f");
+const TAU = Math.PI * 2;
+/** resting pose: slightly elevated, a touch of pitch and bank */
+const BASE = { y: 0.25, pitch: 0.04, roll: -0.05 };
 
 /**
- * The ship, drawn three times from one geometry: the solid built hull (opaque, writes depth), the
+ * The ship, drawn three times from one geometry (plus its engines, see Thruster): the solid built hull (opaque, writes depth), the
  * hologram of the unbuilt part (additive) and the surface point cloud (additive). All three run
  * the same sweep function, so they agree on the front to the pixel.
  *
@@ -64,7 +68,18 @@ export function Ship({ quality }: { quality: Quality }) {
     if (w.started) return;
     w.started = true;
     progress.stage("build", 0.2);
-    trackCompile(gl.compileAsync(scene, camera))
+    // compile() only walks VISIBLE objects, and the thruster / shield / hologram toggle themselves
+    // off — reveal everything for the synchronous traversal so none of them compiles mid-scroll
+    const hidden: Object3D[] = [];
+    scene.traverse((object) => {
+      if (!object.visible) {
+        hidden.push(object);
+        object.visible = true;
+      }
+    });
+    const compiling = gl.compileAsync(scene, camera);
+    hidden.forEach((object) => (object.visible = false));
+    trackCompile(compiling)
       .catch(() => undefined)
       .then(() => {
         progress.done("build");
@@ -73,6 +88,7 @@ export function Ship({ quality }: { quality: Quality }) {
       });
   }, [asset, gl, scene, camera, invalidate]);
 
+  const groupRef = useRef<Group>(null);
   const hologramRef = useRef<Mesh>(null);
   const pointsRef = useRef<Points>(null);
   const lightRef = useRef<PointLight>(null);
@@ -89,7 +105,28 @@ export function Ship({ quality }: { quality: Quality }) {
     // once the front has cleared the nose there is nothing left to draw in the additive passes
     const unbuilt = threshold < 1.12;
     if (hologramRef.current) hologramRef.current.visible = unbuilt;
-    if (pointsRef.current) pointsRef.current.visible = unbuilt;
+    if (pointsRef.current) {
+      // no specks on the calm hero: the cloud only appears once building has begun
+      pointsRef.current.visible = unbuilt && stage.activity > 0.001;
+      (pointsRef.current.material as ShaderMaterial).uniforms.uActivity.value = stage.activity;
+    }
+
+    // floating, not parked: slow incommensurate drift / bob / roll (periods 7–13 s), plus a
+    // forward lurch when the engines kick
+    const group = groupRef.current;
+    if (group) {
+      const t = quality.reducedMotion ? 0 : shared.uTime.value;
+      group.position.set(
+        Math.sin((t * TAU) / 11.3) * 0.06,
+        BASE.y + Math.sin((t * TAU) / 7.4) * 0.08,
+        Math.sin((t * TAU) / 13.1) * 0.04 + stage.kick * stage.thrust * 0.18,
+      );
+      group.rotation.set(
+        BASE.pitch + Math.sin((t * TAU) / 9.6 + 1.3) * 0.018,
+        Math.sin((t * TAU) / 12.7 + 0.4) * 0.025,
+        BASE.roll + Math.sin((t * TAU) / 8.7 + 2.1) * 0.032,
+      );
+    }
     const light = lightRef.current;
     if (light) {
       const front = Math.min(1, Math.max(0, threshold));
@@ -97,20 +134,21 @@ export function Ship({ quality }: { quality: Quality }) {
       // on while the front is on the hull, off before it starts and after it leaves
       const onHull = Math.min(1, Math.max(0, (threshold + 0.06) / 0.08)) * Math.min(1, Math.max(0, (1.1 - threshold) / 0.1));
       light.intensity = 9 * onHull * shared.uDim.value;
-      // world-space weld position for the camera's close-pass framing; the group's tilt is tiny,
-      // so its offset alone is a good enough transform (aimed just under the light, on the hull)
-      stage.front.set(0, 0.6, light.position.z);
+      // world-space weld position (just under the light, on the hull) for close-pass framing
+      stage.front.set(0, 0.35, light.position.z);
+      if (group) group.localToWorld(stage.front);
       stage.frontWeight = onHull;
     }
   });
 
   if (!asset || !parts) return null;
   return (
-    <group position={[0, 0.25, 0]} rotation={[0.04, 0, -0.05]}>
+    <group ref={groupRef} position={[0, BASE.y, 0]} rotation={[BASE.pitch, 0, BASE.roll]}>
       <mesh geometry={asset.geometry} material={parts.hull} />
       <mesh ref={hologramRef} geometry={asset.geometry} material={parts.hologram} renderOrder={1} />
       <points ref={pointsRef} geometry={parts.pointsGeometry} material={parts.pointsMaterial} renderOrder={2} />
       <pointLight ref={lightRef} color={EDGE_LIGHT} intensity={0} distance={6} decay={2} />
+      <Thruster engine={asset.engine} quality={quality} />
     </group>
   );
 }

@@ -4,15 +4,18 @@
  *
  * Chapters: 0 top · 1 about · 2 skills · 3 experience · 4 projects · 5 contact.
  *
- *   build   intro 0 → INTRO_BUILD (time), then chapters 0 → 2 carry it to 1
+ *   build   0 at rest on the hero; the first scroll lights the weld, chapters 0 → 2 carry it to 1
+ *   thrust  engines ignite as the hull completes (≈ 1.9 → 2), full burn through skills →
+ *           experience, settling to an idle glow from projects on
  *   shield  chapters 2.5 → 4, revealed top-down cell by cell
  *   camera  climb close (0 → 2) → pull back (2 → 4) → wide establishing view (4 → 5)
  */
 
-export const INTRO_BUILD = 0.12;
-export const INTRO_SECONDS = 1.6;
-
-const SWEEP_START = -0.09;
+/*
+ * Front start sits a full wobble + edge width below the tail, so at build 0 not a single pixel
+ * of the burning edge shows: the hero is the calm hologram only.
+ */
+const SWEEP_START = -0.12;
 const SWEEP_END = 1.18;
 
 export const clamp01 = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x);
@@ -21,10 +24,15 @@ export const easeInOutCubic = (x: number) => (x < 0.5 ? 4 * x * x * x : 1 - (-2 
 export const easeOutCubic = (x: number) => 1 - (1 - x) ** 3;
 const range = (x: number, a: number, b: number) => clamp01((x - a) / (b - a));
 
-/** 0..1 build progress from intro (0..1) and chapter. Additive so early scrolling never stalls. */
-export function buildProgress(intro: number, chapter: number) {
-  return clamp01(easeOutCubic(intro) * INTRO_BUILD + (1 - INTRO_BUILD) * range(chapter, 0, 2));
-}
+/** 0..1 build progress: starts the moment scrolling does, complete when "skills" lands. */
+export const buildProgress = (chapter: number) => range(chapter, 0, 2);
+
+/** 0..1 how present the build effects (point cloud, motes) are: in over the first ~4 % of build */
+export const buildActivity = (build: number) => smooth(range(build, 0, 0.04));
+
+/** steady engine level (before the ignition kick) */
+export const thrustLevel = (chapter: number) =>
+  smooth(range(chapter, 1.88, 2)) * (1 - 0.62 * smooth(range(chapter, 3.4, 4.4)));
 
 /**
  * Build progress → front position along the normalised axis. Padded past both ends so the noisy
@@ -81,5 +89,3 @@ export const frontFocus = (chapter: number) => 0.75 * (1 - smooth(range(chapter,
 /** Pointer parallax strength: full while close, 15 % once pulled back. */
 export const parallaxScale = (chapter: number) => 1 - 0.85 * smooth(range(chapter, 2, 3.6));
 
-/** Fog thins as the camera pulls back so the wide view is not a grey wall. */
-export const fogDensity = (chapter: number) => 0.034 - 0.022 * smooth(range(chapter, 2, 5));

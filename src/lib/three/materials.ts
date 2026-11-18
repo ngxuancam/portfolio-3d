@@ -5,10 +5,9 @@ import {
   MeshStandardMaterial,
   ShaderMaterial,
   Uniform,
-  Vector3,
   type Texture,
 } from "three";
-import { FOG_GLSL, NOISE_GLSL, SWEEP_GLSL } from "./glsl";
+import { FOG_GLSL, NOISE_GLSL, SAFE_GLSL, SWEEP_GLSL } from "./glsl";
 import { shared } from "./state";
 
 /** Palette (docs/DESIGN.md). Colors are authored in sRGB; three converts them to linear. */
@@ -56,7 +55,8 @@ export function createHullMaterial(map: Texture | null) {
         uniform vec3 uRimColor;
         uniform float uDim;
         ${NOISE_GLSL}
-        ${SWEEP_GLSL}`,
+        ${SWEEP_GLSL}
+        ${SAFE_GLSL}`,
       )
       .replace(
         "#include <clipping_planes_fragment>",
@@ -71,10 +71,10 @@ export function createHullMaterial(map: Texture | null) {
         totalEmissiveRadiance += uEdgeColor * sweepE * uEdgeIntensity;
         // freshly built metal is still warm just behind the front: a short cooling tail
         totalEmissiveRadiance += uEdgeColor * (1.0 - smoothstep(0.0, 0.14, sweepD)) * 0.35;
-        float rimF = pow(1.0 - saturate(dot(normal, normalize(vViewPosition))), 3.0);
+        float rimF = pow(1.0 - saturate(dot(normal, safeNormalize(vViewPosition))), 3.0);
         totalEmissiveRadiance += uRimColor * rimF * 0.09;`,
       )
-      .replace("#include <tonemapping_fragment>", "gl_FragColor.rgb *= uDim;\n#include <tonemapping_fragment>");
+      .replace("#include <tonemapping_fragment>", "gl_FragColor.rgb = safeHdr(gl_FragColor.rgb * uDim);\n#include <tonemapping_fragment>");
   };
   material.customProgramCacheKey = () => "stage-hull";
   return material;
@@ -105,7 +105,7 @@ export function createHologramMaterial() {
       void main() {
         vPos = position;
         vNormalLocal = normal;
-        vNormalView = normalize(normalMatrix * normal);
+        vNormalView = normalMatrix * normal;
         vec4 mv = modelViewMatrix * vec4(position, 1.0);
         vView = -mv.xyz;
         gl_Position = projectionMatrix * mv;
@@ -123,6 +123,7 @@ export function createHologramMaterial() {
       ${NOISE_GLSL}
       ${SWEEP_GLSL}
       ${FOG_GLSL}
+      ${SAFE_GLSL}
       float gridLines(vec3 p, vec3 n) {
         vec3 dist = 0.5 - abs(fract(p) - 0.5);
         // epsilon: smoothstep is undefined when its edges meet (fwidth is 0 on flat faces)
@@ -134,10 +135,10 @@ export function createHologramMaterial() {
       void main() {
         float d = sweepDistance(vPos);
         if (d >= 0.0) discard;
-        vec3 n = normalize(vNormalView);
-        vec3 v = normalize(vView);
-        float fres = pow(1.0 - abs(dot(n, v)), 2.4);
-        float grid = gridLines(vPos * 2.6 + vec3(0.0, uTime * 0.35, 0.0), normalize(vNormalLocal));
+        vec3 n = safeNormalize(vNormalView);
+        vec3 v = safeNormalize(vView);
+        float fres = pow(clamp(1.0 - abs(dot(n, v)), 0.0, 1.0), 2.4);
+        float grid = gridLines(vPos * 2.6 + vec3(0.0, uTime * 0.35, 0.0), safeNormalize(vNormalLocal));
         // faint interference shimmer — reads as projected light rather than a painted surface
         float shimmer = 0.9 + 0.1 * sin(uTime * 37.0 + vPos.y * 42.0);
         vec3 col = uHoloColor * (fres * 0.75 + grid * 0.32 + 0.02) * 0.6 * shimmer;
@@ -146,7 +147,7 @@ export function createHologramMaterial() {
         // the hologram just ahead of the front warms up: the weld is coming
         col += uEdgeColor * smoothstep(-0.12, 0.0, d) * 0.12;
         col *= fogKeep(length(vView)) * uDim;
-        gl_FragColor = vec4(col, 1.0);
+        gl_FragColor = vec4(safeHdr(col), 1.0);
       }
     `,
     transparent: true,
@@ -168,11 +169,13 @@ export function createHullPointsMaterial() {
       uDim: shared.uDim,
       uFogDensity: shared.uFogDensity,
       uPointScale: shared.uPointScale,
+      uActivity: new Uniform(0),
       uCold: new Uniform(SHIELD),
       uHot: new Uniform(SIGNAL),
     },
     vertexShader: /* glsl */ `
       uniform float uPointScale;
+      uniform float uActivity;
       attribute vec3 aDir;
       attribute float aSeed;
       varying float vAlpha;
@@ -190,8 +193,8 @@ export function createHullPointsMaterial() {
         vec3 p = position + aDir * pull * (0.08 + 0.22 * breathe);
         vec4 mv = modelViewMatrix * vec4(p, 1.0);
         float size = (0.022 + 0.018 * aSeed) * (1.0 + edge * 3.0);
-        gl_PointSize = max(1.0, size * uPointScale / -mv.z);
-        vAlpha = (1.0 - built) * (0.28 + 0.5 * aSeed * aSeed);
+        gl_PointSize = clamp(size * uPointScale / max(-mv.z, 0.05), 1.0, 64.0);
+        vAlpha = (1.0 - built) * (0.28 + 0.5 * aSeed * aSeed) * uActivity;
         vEdge = edge;
         vDepth = -mv.z;
         gl_Position = projectionMatrix * mv;
@@ -205,13 +208,14 @@ export function createHullPointsMaterial() {
       varying float vEdge;
       varying float vDepth;
       ${FOG_GLSL}
+      ${SAFE_GLSL}
       void main() {
         float r = length(gl_PointCoord - 0.5);
         float disc = 1.0 - smoothstep(0.15, 0.5, r);
         vec3 col = mix(uCold * 0.7, uHot * 6.0, vEdge);
         float a = vAlpha * disc * (1.0 + vEdge * 1.5);
         if (a < 0.003) discard;
-        gl_FragColor = vec4(col * a * fogKeep(vDepth) * uDim, 1.0);
+        gl_FragColor = vec4(safeHdr(col * a * fogKeep(vDepth) * uDim), 1.0);
       }
     `,
     transparent: true,
@@ -252,7 +256,7 @@ export function createShieldMaterial() {
         vCell = aCell;
         vec4 world = modelMatrix * vec4(position, 1.0);
         vWorld = world.xyz;
-        vNormalW = normalize(mat3(modelMatrix) * position);
+        vNormalW = mat3(modelMatrix) * position;
         vec4 mv = viewMatrix * world;
         vDepth = -mv.z;
         gl_Position = projectionMatrix * mv;
@@ -270,6 +274,7 @@ export function createShieldMaterial() {
       varying float vDepth;
       ${NOISE_GLSL}
       ${FOG_GLSL}
+      ${SAFE_GLSL}
       void main() {
         const float PAD = 0.12;
         float coord = vCell.y + (vCell.x - 0.5) * 0.1;
@@ -287,8 +292,8 @@ export function createShieldMaterial() {
 
         float aa = fwidth(vEdge) + 1e-4;
         float rim = 1.0 - smoothstep(0.04, 0.04 + aa * 1.5, vEdge);
-        vec3 v = normalize(cameraPosition - vWorld);
-        float graze = 0.3 + 0.7 * pow(1.0 - abs(dot(normalize(vNormalW), v)), 2.0);
+        vec3 v = safeNormalize(cameraPosition - vWorld);
+        float graze = 0.3 + 0.7 * pow(clamp(1.0 - abs(dot(safeNormalize(vNormalW), v)), 0.0, 1.0), 2.0);
 
         // settled: hairline rims, energy patches only brighten the rims, body fill near zero
         vec3 col = uColor * revealed * (rim * (0.05 + 0.45 * energy) + 0.002 + 0.006 * energy) * graze;
@@ -296,87 +301,12 @@ export function createShieldMaterial() {
         // the reveal front: rims flare hard (blooms), cell bodies only glimmer
         col += uColor * flash * (1.5 + 6.0 * energy) * (0.06 + rim) * mix(1.0, 0.6, uInside);
         col *= fogKeep(vDepth);
-        gl_FragColor = vec4(col, 1.0);
+        gl_FragColor = vec4(safeHdr(col), 1.0);
       }
     `,
     transparent: true,
     depthWrite: false,
     side: DoubleSide,
-    blending: AdditiveBlending,
-  });
-}
-
-/**
- * Dust motes. All motion is in the vertex shader (rise + sway wrapped in a box, plus a push away
- * from the pointer ray) so thousands of motes cost one draw call and zero CPU per frame.
- */
-export function createDustMaterial(box: Vector3) {
-  return new ShaderMaterial({
-    uniforms: {
-      uTime: shared.uTime,
-      uFogDensity: shared.uFogDensity,
-      uPointScale: shared.uPointScale,
-      uBox: new Uniform(box),
-      uRayOrigin: new Uniform(new Vector3()),
-      uRayDir: new Uniform(new Vector3(0, 0, -1)),
-      uPush: new Uniform(0),
-      uWarm: new Uniform(new Color("#ffd2b0")),
-      uHot: new Uniform(SIGNAL),
-    },
-    vertexShader: /* glsl */ `
-      uniform float uTime;
-      uniform float uPointScale;
-      uniform vec3 uBox;
-      uniform vec3 uRayOrigin;
-      uniform vec3 uRayDir;
-      uniform float uPush;
-      attribute float aSeed;
-      varying float vSeed;
-      varying float vDepth;
-      varying float vTwinkle;
-      void main() {
-        vec3 p = position;
-        p.y = mod(p.y + uTime * (0.08 + 0.12 * aSeed) + uBox.y * 0.5, uBox.y) - uBox.y * 0.5;
-        p.x += sin(uTime * 0.3 + aSeed * 6.2832) * 0.25;
-        p.z += cos(uTime * 0.23 + aSeed * 12.566) * 0.25;
-        vec4 world = modelMatrix * vec4(p, 1.0);
-
-        // shove motes off the pointer ray: distance to the ray, pushed outward within a soft radius
-        vec3 rel = world.xyz - uRayOrigin;
-        float along = dot(rel, uRayDir);
-        vec3 off = rel - uRayDir * along;
-        float dist = length(off);
-        float push = uPush * step(0.0, along) * (1.0 - smoothstep(0.0, 1.8, dist));
-        world.xyz += off / max(dist, 1e-3) * push * 1.2;
-
-        vec4 mv = viewMatrix * world;
-        float size = 0.03 + 0.06 * fract(aSeed * 73.1);
-        gl_PointSize = max(1.0, size * uPointScale / -mv.z);
-        vSeed = aSeed;
-        vDepth = -mv.z;
-        vTwinkle = 0.6 + 0.4 * sin(uTime * (0.6 + aSeed) + aSeed * 40.0);
-        gl_Position = projectionMatrix * mv;
-      }
-    `,
-    fragmentShader: /* glsl */ `
-      uniform vec3 uWarm;
-      uniform vec3 uHot;
-      varying float vSeed;
-      varying float vDepth;
-      varying float vTwinkle;
-      ${FOG_GLSL}
-      void main() {
-        float r = length(gl_PointCoord - 0.5);
-        float disc = 1.0 - smoothstep(0.18, 0.5, r);
-        // one mote in ~12 carries the signal colour: embers drifting off the weld
-        vec3 col = vSeed > 0.92 ? uHot * 1.6 : uWarm * 0.9;
-        float a = disc * 0.2 * vTwinkle * fogKeep(vDepth * 0.6);
-        if (a < 0.002) discard;
-        gl_FragColor = vec4(col * a, 1.0);
-      }
-    `,
-    transparent: true,
-    depthWrite: false,
     blending: AdditiveBlending,
   });
 }

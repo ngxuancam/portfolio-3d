@@ -7,7 +7,6 @@ export type Quality = {
   /** phones / tablets / narrow windows */
   low: boolean;
   maxDpr: number;
-  dust: number;
   hullPoints: number;
   multisampling: number;
   aberration: boolean;
@@ -51,7 +50,6 @@ export function detectCapability(): Capability {
     quality: {
       low,
       maxDpr: coarse ? 1.25 : 1.5,
-      dust: low ? 700 : 2000,
       hullPoints: low ? 3500 : 7000,
       // MSAA on the HDR target is the single most expensive knob: desktop only
       multisampling: low ? 0 : 2,

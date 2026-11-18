@@ -81,6 +81,13 @@ export function CameraRig({ quality }: { quality: Quality }) {
 
     camera.position.copy(tmp.target).add(tmp.offset);
     camera.lookAt(tmp.target);
+    // engine shake: position-only jitter after aiming, so the frame trembles rather than swings
+    if (stage.shake > 1e-4) {
+      const t = state.clock.elapsedTime;
+      tmp.right.set(1, 0, 0).applyQuaternion(camera.quaternion);
+      camera.position.addScaledVector(tmp.right, Math.sin(t * 61) * Math.sin(t * 23.3) * stage.shake);
+      camera.position.y += Math.sin(t * 47 + 1.7) * Math.sin(t * 17.9) * stage.shake;
+    }
     // a hint of roll while close in, levelled out as the camera pulls back
     if (!quality.reducedMotion) camera.rotateZ(-0.045 * (1 - smooth(Math.min(1, stage.chapter / 2.5))));
 
@@ -95,6 +102,7 @@ export function CameraRig({ quality }: { quality: Quality }) {
       v.height = height;
       v.shift = tmp.shift;
       v.fov = fov;
+      stage.viewShift = tmp.shift;
       camera.fov = fov;
       // negative x offset slides the window left, i.e. the scene is drawn right of centre
       camera.setViewOffset(width, height, (-tmp.shift * width) / 2, 0, width, height);

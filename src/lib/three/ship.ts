@@ -12,7 +12,43 @@ export type ShipAsset = {
   /** min z and length of the normalised hull, for the sweep uniform */
   axisMin: number;
   axisLength: number;
+  /** the twin engine exhausts (mirrored in x), found from the geometry */
+  engine: EngineMount;
 };
+
+/** one exhaust of a mirrored pair: centre (±x, y, z) and nozzle radius, in hull space */
+export type EngineMount = { x: number; y: number; z: number; radius: number };
+
+/**
+ * Find the engines. The hull's −z end is the tail: it is the wide end (wings + pods) and carries
+ * almost all the rear-facing faces, while +z tapers to the nose. The exhausts are the clusters of
+ * rear-facing (normal.z < −0.7) faces in the last quarter, off the centreline — on this model a
+ * mirrored pair at |x| ≈ 1.1. Measured, not hard-coded, so a re-export of the model still lines up.
+ */
+function findEngines(geometry: BufferGeometry, axisMin: number, axisLength: number): EngineMount {
+  const pos = geometry.attributes.position;
+  const nrm = geometry.attributes.normal;
+  let n = 0;
+  let sx = 0;
+  let sy = 0;
+  let zMin = Infinity;
+  let yMin = Infinity;
+  let yMax = -Infinity;
+  for (let i = 0; i < pos.count; i++) {
+    if (nrm.getZ(i) > -0.7) continue;
+    const z = pos.getZ(i);
+    const ax = Math.abs(pos.getX(i));
+    if (z > axisMin + axisLength * 0.25 || ax < 0.5 || ax > 1.8) continue;
+    n++;
+    sx += ax;
+    sy += pos.getY(i);
+    zMin = Math.min(zMin, z);
+    yMin = Math.min(yMin, pos.getY(i));
+    yMax = Math.max(yMax, pos.getY(i));
+  }
+  if (n < 8) return { x: 1.1, y: 0.05, z: axisMin + 0.5, radius: 0.3 };
+  return { x: sx / n, y: sy / n, z: zMin, radius: Math.min(0.45, Math.max(0.18, (yMax - yMin) * 0.35)) };
+}
 
 let parsed: Promise<ShipAsset | null> | null = null;
 
@@ -58,7 +94,9 @@ export function loadShip(onProgress: (fraction: number) => void): Promise<ShipAs
       if (!geometry.attributes.normal) geometry.computeVertexNormals();
 
       const bounds = geometry.boundingBox!;
-      return { geometry, map, axisMin: bounds.min.z, axisLength: bounds.max.z - bounds.min.z };
+      const axisMin = bounds.min.z;
+      const axisLength = bounds.max.z - bounds.min.z;
+      return { geometry, map, axisMin, axisLength, engine: findEngines(geometry, axisMin, axisLength) };
     } catch {
       return null;
     }

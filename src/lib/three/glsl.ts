@@ -71,3 +71,21 @@ float fogKeep(float depth) {
   return exp(-d * d);
 }
 `;
+
+/**
+ * HDR safety net for every additive / emissive output. One NaN or Inf pixel is enough to black
+ * out the whole frame: the bloom mip chain blurs it into every texel. Clamp first (on D3D/ANGLE
+ * min/max also return the non-NaN operand), then reject anything still non-finite. The `x != x`
+ * and range tests are written out so the check survives drivers that fold `isnan` away.
+ */
+export const SAFE_GLSL = /* glsl */ `
+vec3 safeHdr(vec3 c) {
+  bvec3 nan = notEqual(c, c);
+  if (any(nan) || any(isinf(c)) || !(c.r < 1e30 && c.g < 1e30 && c.b < 1e30)) return vec3(0.0);
+  return min(max(c, vec3(0.0)), vec3(64.0));
+}
+vec3 safeNormalize(vec3 v) {
+  float l = length(v);
+  return l > 1e-6 ? v / l : vec3(0.0, 0.0, 1.0);
+}
+`;
