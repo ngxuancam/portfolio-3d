@@ -1,0 +1,254 @@
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+}
+
+.hero__frame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  /* clear the fixed header at the top, leave room for the scroll cue at the bottom */
+  padding-block: clamp(5.5rem, 12vh, 7.5rem) clamp(1.5rem, 4vh, 2.5rem);
+}
+
+.hero__corners {
+  inset: clamp(4.5rem, 10vh, 6rem) var(--gutter) clamp(1rem, 2.5vh, 1.5rem);
+}
+
+.hero__head {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.hero__index {
+  flex: none;
+  color: var(--c-ink);
+}
+
+.hero__num {
+  color: var(--c-signal-2);
+}
+
+.hero__rule {
+  flex: 1;
+  height: 1px;
+  background: var(--c-rule);
+  transform-origin: left center;
+}
+
+.hero__readout {
+  flex: none;
+}
+
+@media (max-width: 40rem) {
+  .hero__readout {
+    display: none;
+  }
+}
+
+/* the content block sits low in the frame, like a caption under the ship */
+.hero__body {
+  display: grid;
+  gap: clamp(1.25rem, 3vh, 2rem);
+  margin-top: auto;
+  padding-block: 3rem 2rem;
+  max-width: 100%;
+}
+
+@media (min-width: 64rem) {
+  .hero__body {
+    /* columns 1–7 of 12 */
+    width: calc((100% - 11 * 1.5rem) / 12 * 7 + 6 * 1.5rem);
+  }
+}
+
+.hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  color: var(--c-ink);
+}
+
+.hero__sep {
+  color: var(--c-ink-3);
+}
+
+.hero__name {
+  font-size: clamp(3.25rem, 9vw, 8.5rem);
+  font-weight: 200;
+  letter-spacing: -0.045em;
+  /* tight leading, but descenders get explicit room so nothing is clipped */
+  line-height: 0.98;
+  padding-bottom: 0.08em;
+  /* a stacked name: roughly one word per line on wide screens */
+  max-width: 9ch;
+  font-variant-numeric: tabular-nums;
+}
+
+.hero__word {
+  display: inline-block;
+}
+
+.hero__headline {
+  max-width: 34ch;
+  font-size: clamp(1.125rem, 2vw, 1.5rem);
+  font-weight: 300;
+  line-height: 1.4;
+  color: var(--c-ink-2);
+}
+
+.hero__status {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  color: var(--c-ink);
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+}
+
+/* scroll cue: a hairline that keeps dropping, plus a mono label */
+.hero__cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.875rem;
+  align-self: flex-start;
+  padding-block: 0.5rem;
+  text-decoration: none;
+  color: var(--c-ink-2);
+  transition: color calc(4 * var(--f)) var(--ease-ignite);
+}
+
+.hero__cue:hover {
+  color: var(--c-ink);
+}
+
+.hero__cueLine {
+  position: relative;
+  width: 1px;
+  height: 2.5rem;
+  overflow: hidden;
+  background: var(--c-rule);
+}
+
+.hero__cueLine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--c-signal);
+  translate: 0 -100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero__cueLine::after {
+    animation: cue-drop 2.4s var(--ease-expo) infinite;
+  }
+}
+
+@keyframes cue-drop {
+  0% {
+    translate: 0 -100%;
+  }
+  45% {
+    translate: 0 0;
+  }
+  100% {
+    translate: 0 100%;
+  }
+}
+
+/* ───────────── Entrance ─────────────
+ * Hidden only when the head script has flagged a motion-capable visitor. Plays when the loader
+ * sets html[data-loaded]. If that attribute never arrives (loader error, blocked script), the
+ * failsafe animation shows everything after 9 s so the title card can never stay blank.
+ */
+
+:global(html.has-motion) .enter,
+:global(html.has-motion) .enterStrike {
+  opacity: 0;
+  animation: hero-failsafe 1ms 9s forwards;
+}
+
+:global(html.has-motion) .enterRule {
+  scale: 0 1;
+  animation: hero-failsafe 1ms 9s forwards;
+}
+
+:global(html.has-motion[data-loaded]) .enter {
+  animation: hero-rise calc(30 * var(--f)) var(--ease-expo) calc(var(--i, 0) * 3 * var(--f)) both;
+}
+
+/* chrome labels "strike" on with the stepped lamp flicker (≈ 280 ms) */
+:global(html.has-motion[data-loaded]) .enterStrike {
+  animation: hero-strike calc(9 * var(--f)) step-end calc(var(--i, 0) * 3 * var(--f) + 4 * var(--f)) both;
+}
+
+:global(html.has-motion[data-loaded]) .enterRule {
+  animation: hero-draw calc(24 * var(--f)) var(--ease-quart) calc(2 * var(--f)) both;
+}
+
+/* safety net if the reduced-motion preference flips after the head script ran */
+@media (prefers-reduced-motion: reduce) {
+  :global(html.has-motion) .enter,
+  :global(html.has-motion) .enterStrike,
+  :global(html.has-motion) .enterRule {
+    opacity: 1;
+    scale: 1;
+    animation: none;
+  }
+}
+
+@keyframes hero-failsafe {
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    translate: 0 0.35em;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes hero-draw {
+  from {
+    scale: 0 1;
+  }
+  to {
+    scale: 1 1;
+  }
+}
+
+@keyframes hero-strike {
+  0% {
+    opacity: 0;
+  }
+  4% {
+    opacity: 1;
+  }
+  14% {
+    opacity: 0.05;
+  }
+  29% {
+    opacity: 0.9;
+  }
+  41% {
+    opacity: 0.1;
+  }
+  55%,
+  100% {
+    opacity: 1;
+  }
+}

@@ -1,0 +1,238 @@
+/* ───────────── Chapter frame ───────────── */
+
+.chapter {
+  position: relative;
+  padding-block: clamp(5rem, 14vh, 9rem);
+}
+
+.chapter__frame {
+  position: relative;
+  padding-block: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+/* the frame's corner marks sit on the content box, not on the container's gutter */
+.chapter__frame > .corners {
+  inset-inline: var(--gutter);
+}
+
+.chapter__head {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: clamp(2rem, 5vw, 3.5rem);
+}
+
+.chapter__index {
+  flex: none;
+  color: var(--c-ink);
+}
+
+.chapter__num {
+  color: var(--c-signal-2);
+}
+
+.chapter__rule {
+  flex: 1;
+  height: 1px;
+  background: var(--c-rule);
+}
+
+/* the readout is a HUD flourish; on phones the rule + index say enough */
+.chapter__readout {
+  flex: none;
+  color: var(--c-ink-2);
+}
+
+@media (max-width: 40rem) {
+  .chapter__readout {
+    display: none;
+  }
+}
+
+.chapter__column {
+  display: grid;
+  gap: clamp(2rem, 4vw, 3rem);
+  max-width: 100%;
+}
+
+/* columns 1–7 of 12: the right five columns are left to the ship on the stage */
+@media (min-width: 64rem) {
+  .chapter__column {
+    width: calc((100% - 11 * 1.5rem) / 12 * 7 + 6 * 1.5rem);
+  }
+}
+
+.chapter__title {
+  font-size: clamp(2.5rem, 7vw, 5rem);
+  font-weight: 200;
+  /* line-height 1 + a little bottom padding keeps descenders (g, y, p) from being clipped */
+  padding-bottom: 0.06em;
+}
+
+/* ───────────── Corner marks ───────────── */
+
+.corners {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.corner {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border: 0 solid var(--c-ink-3);
+}
+
+.corner--tl {
+  top: -1px;
+  left: -1px;
+  border-top-width: 1px;
+  border-left-width: 1px;
+}
+
+.corner--tr {
+  top: -1px;
+  right: -1px;
+  border-top-width: 1px;
+  border-right-width: 1px;
+}
+
+.corner--bl {
+  bottom: -1px;
+  left: -1px;
+  border-bottom-width: 1px;
+  border-left-width: 1px;
+}
+
+.corner--br {
+  bottom: -1px;
+  right: -1px;
+  border-bottom-width: 1px;
+  border-right-width: 1px;
+}
+
+/* ───────────── Shared bits ───────────── */
+
+/* mono key above a value ("LOCATION", "OUTCOME" …) */
+.key {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+/* stack / tag list: square, hairline, mono */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tag {
+  padding: 0.3em 0.6em;
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-ink-2);
+  white-space: nowrap;
+}
+
+/* live-status lamp: a square signal dot with a ring that keeps pinging */
+.signal {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: 7px;
+  height: 7px;
+  background: var(--c-signal);
+}
+
+.signal::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border: 1px solid var(--c-signal);
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .signal::after {
+    animation: signal-ping 2s var(--ease-expo) infinite;
+  }
+}
+
+@keyframes signal-ping {
+  0% {
+    opacity: 0.9;
+    scale: 0.6;
+  }
+  70%,
+  100% {
+    opacity: 0;
+    scale: 1.8;
+  }
+}
+
+/* ───────────── Scroll reveals ─────────────
+ * Pure CSS, driven by each element's own progress through the viewport. Only browsers that
+ * support view timelines AND visitors who did not ask for reduced motion get them; everyone
+ * else sees the final state, so no content ever depends on an animation running.
+ */
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* text blocks: physical rise with expo-out */
+    .reveal {
+      animation: reveal-rise linear both;
+      animation-timing-function: var(--ease-expo);
+      animation-timeline: view();
+      animation-range: entry 5% entry 85%;
+    }
+
+    /* chrome labels: the electric "strike" flicker, like a lamp catching */
+    .strike {
+      animation: strike step-end both;
+      animation-timeline: view();
+      animation-range: entry 40% entry 100%;
+    }
+  }
+}
+
+@keyframes reveal-rise {
+  from {
+    opacity: 0;
+    translate: 0 1.75rem;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+/* stepped levels from the brief; step-end holds each level until the next keyframe */
+@keyframes strike {
+  0% {
+    opacity: 0;
+  }
+  4% {
+    opacity: 1;
+  }
+  14% {
+    opacity: 0.05;
+  }
+  29% {
+    opacity: 0.9;
+  }
+  41% {
+    opacity: 0.1;
+  }
+  55%,
+  100% {
+    opacity: 1;
+  }
+}

@@ -1,0 +1,79 @@
+.about__summary {
+  max-width: 34ch;
+  font-size: clamp(1.25rem, 2.4vw, 1.75rem);
+  font-weight: 300;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+  text-wrap: pretty;
+}
+
+/* facts sheet: hairline-separated rows, mono keys on the left on wider screens */
+.about__facts {
+  margin: 0;
+  border-top: 1px solid var(--c-rule);
+}
+
+.about__fact {
+  padding-block: 1rem;
+  border-bottom: 1px solid var(--c-rule);
+}
+
+.about__fact dd {
+  margin: 0;
+}
+
+@media (min-width: 40rem) {
+  .about__fact {
+    display: grid;
+    grid-template-columns: 9rem 1fr;
+    column-gap: 1.5rem;
+  }
+
+  .about__fact dt {
+    grid-row: span 4;
+    margin-bottom: 0;
+    padding-top: 0.3em;
+  }
+}
+
+.about__muted {
+  color: var(--c-ink-2);
+}
+
+/* metrics: a 2×2 instrument panel separated by hairlines */
+.about__metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--c-rule);
+  border-left: 1px solid var(--c-rule);
+}
+
+.about__metric {
+  position: relative;
+  display: grid;
+  align-content: space-between;
+  gap: 1.25rem;
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+  border-right: 1px solid var(--c-rule);
+  border-bottom: 1px solid var(--c-rule);
+}
+
+.about__value {
+  font-size: clamp(2.5rem, 6vw, 4.25rem);
+  font-weight: 200;
+  line-height: 1;
+  letter-spacing: var(--tracking-display);
+  font-variant-numeric: tabular-nums;
+}
+
+.about__label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  line-height: 1.5;
+  color: var(--c-ink-2);
+}

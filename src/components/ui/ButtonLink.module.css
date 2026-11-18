@@ -1,7 +1,8 @@
 .button {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 0.6em;
+  gap: 0.75em;
   padding: 0.7em 1.1em;
   border: 1px dashed var(--c-rule-2);
   border-radius: var(--r);
@@ -10,6 +11,7 @@
   letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   text-decoration: none;
+  white-space: nowrap;
   color: var(--c-ink);
   transition:
     background-color calc(8 * var(--f)) var(--ease-cutout),
@@ -22,6 +24,25 @@
   border-color: var(--c-ink);
 }
 
+.button__label {
+  /* the scramble swaps glyphs of equal advance only in a mono face; tabular keeps digits still */
+  font-variant-numeric: tabular-nums;
+}
+
+/* small square signal mark: reads as a "live" contact on the instrument panel */
+.button__tick {
+  width: 4px;
+  height: 4px;
+  flex: none;
+  background: currentColor;
+  opacity: 0.5;
+}
+
+.button--solid .button__tick {
+  background: var(--c-signal);
+  opacity: 1;
+}
+
 /* invert fill: ignites in ~4 frames, cuts out in ~8 */
 .button:hover {
   background: var(--c-ink);
@@ -31,9 +52,30 @@
   transition-timing-function: var(--ease-ignite);
 }
 
+/* press: a 3-frame brightness blip, held levels like the rest of the chrome */
+.button:active {
+  animation: button-press calc(3 * var(--f)) steps(1, end);
+}
+
+@keyframes button-press {
+  0% {
+    filter: brightness(1.8);
+  }
+  40% {
+    filter: brightness(0.7);
+  }
+  100% {
+    filter: brightness(1);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .button,
   .button:hover {
     transition: none;
+  }
+
+  .button:active {
+    animation: none;
   }
 }

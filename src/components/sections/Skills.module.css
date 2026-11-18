@@ -1,0 +1,124 @@
+.skills__groups {
+  display: grid;
+  gap: clamp(2.5rem, 5vw, 3.5rem);
+}
+
+.skills__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* the caption keeps its table-caption display (so it stays the table's accessible name);
+   its parts stack as blocks instead */
+.skills__caption {
+  padding-bottom: 1rem;
+  text-align: left;
+  caption-side: top;
+}
+
+.skills__caption > span {
+  display: block;
+}
+
+.skills__caption > span + span {
+  margin-top: 0.375rem;
+}
+
+.skills__code {
+  color: var(--c-signal-2);
+}
+
+.skills__title {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 200;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--c-ink);
+}
+
+.skills__desc {
+  font-size: 0.9375rem;
+  color: var(--c-ink-2);
+}
+
+.skills__row {
+  border-top: 1px solid var(--c-rule);
+}
+
+.skills__row:last-child {
+  border-bottom: 1px solid var(--c-rule);
+}
+
+.skills__name {
+  padding: 0.7rem 1rem 0.7rem 0;
+  font-weight: 300;
+  font-size: 1rem;
+  line-height: 1.35;
+  text-align: left;
+}
+
+.skills__reading {
+  width: 1%;
+  padding-block: 0.7rem;
+  white-space: nowrap;
+}
+
+/* meter + level word share one baseline: [■■□] ADVANCED */
+.skills__reading > * {
+  vertical-align: middle;
+}
+
+.skills__level {
+  display: inline-block;
+  min-width: 7.5em;
+  margin-left: 0.875rem;
+}
+
+@media (max-width: 30rem) {
+  .skills__level {
+    min-width: 0;
+  }
+}
+
+.meter {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.meter__seg {
+  width: 1.25rem;
+  height: 0.5rem;
+  border: 1px solid var(--c-rule-2);
+}
+
+.meter__seg--on {
+  border-color: var(--c-ink);
+  background: var(--c-ink);
+}
+
+/* a fully lit meter ends on the signal colour: the one accent marks the top reading */
+.meter__seg--on:nth-child(3) {
+  border-color: var(--c-signal);
+  background: var(--c-signal);
+}
+
+/* segments ignite one after another as the row scrolls in — stepped, like a lamp */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .meter__seg--on {
+      animation: seg-ignite linear both;
+      animation-timing-function: var(--ease-ignite);
+      animation-timeline: view();
+      animation-range: entry calc(30% + var(--s, 0) * 20%) entry calc(60% + var(--s, 0) * 20%);
+    }
+  }
+}
+
+@keyframes seg-ignite {
+  from {
+    opacity: 0.08;
+  }
+  to {
+    opacity: 1;
+  }
+}

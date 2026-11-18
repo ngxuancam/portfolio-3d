@@ -1,0 +1,80 @@
+.contact__status {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.contact__status p {
+  color: var(--c-ink);
+}
+
+/* the address is the hero of the chapter: display weight, wraps anywhere on narrow phones */
+.contact__email {
+  display: inline-block;
+  max-width: 100%;
+  /* sized to the 7-column text column on wide screens, so it fits on one line there */
+  font-size: clamp(1.5rem, 5.4vw, 3.25rem);
+  font-weight: 200;
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+  padding-bottom: 0.1em;
+  /* break only at the <wbr> after the name; "anywhere" is the last resort on tiny phones */
+  overflow-wrap: break-word;
+  color: var(--c-ink);
+  text-decoration: none;
+  /* hairline underline that ignites to the signal colour on hover */
+  background: linear-gradient(var(--c-rule-2), var(--c-rule-2)) left bottom / 100% 1px no-repeat;
+  transition:
+    color calc(8 * var(--f)) var(--ease-cutout),
+    background-size calc(8 * var(--f)) var(--ease-cutout);
+}
+
+.contact__email:hover {
+  color: var(--c-signal-2);
+  background-image: linear-gradient(var(--c-signal), var(--c-signal));
+  transition-duration: calc(4 * var(--f));
+  transition-timing-function: var(--ease-ignite);
+}
+
+.contact__profiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.contact__handle {
+  opacity: 0.6;
+  text-transform: none;
+  letter-spacing: 0.04em;
+}
+
+.contact__end {
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--c-rule);
+}
+
+.contact__end > span {
+  color: var(--c-signal);
+  margin-right: 0.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact__email {
+    transition: none;
+  }
+}
+
+@media (min-width: 64rem) {
+  .contact__email {
+    font-size: clamp(2rem, 3.4vw, 3.25rem);
+  }
+}
+
+@media (max-width: 22rem) {
+  .contact__email {
+    overflow-wrap: anywhere;
+  }
+}
