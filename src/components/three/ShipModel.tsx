@@ -6,6 +6,9 @@ import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import { stageTheme } from "@/lib/three/stageTheme";
 import { sceneSignals } from "@/lib/three/sceneSignals";
+import { damp, dampQ } from "maath/easing";
+import { SimplexNoise } from "three/examples/jsm/math/SimplexNoise.js";
+import { cinema } from "@/lib/three/cinema";
 import { ANCHOR_IDS, shipAnchors, type AnchorId, type AnchorSnapshot } from "@/lib/three/shipAnchors";
 
 /**
@@ -27,12 +30,24 @@ const SHIP_SIZE = 4;
  */
 const BANK_GAIN = 1.1;
 const BANK_SCALE = 0.5; // max roll = BANK_SCALE * pi/2 ≈ 45°, as in the example
-const BANK_SMOOTHING = 8; // 1 - exp(-dt * k)
-const STAGE_SMOOTHING = 4; // the ship trails the scroll a little: inertia, not animation
 const TURN_SPAN = 0.07; // stage units either side of the ship used to measure the bend
 const TANGENT_EPS = 0.02;
 /** Stage at the very bottom of the page (SceneBackdropLoader makes it exactly this on any screen). */
 const END_U = 5;
+
+/**
+ * Smoothness, after the animation principles "slow in and slow out", "arcs" and "follow through"
+ * (Thomas & Johnston, The Illusion of Life). The ship does not copy the scroll: it chases it
+ * through maath's `damp` (pmndrs, MIT) — a critically damped spring with a speed cap — so it
+ * eases away, cruises and settles in its own time. Its attitude follows through `dampQ`.
+ */
+const FOLLOW_TIME = 0.75; // s to catch up with the scroll
+const FOLLOW_MAX_SPEED = 1.3; // sections per second, however hard the page is flung
+const TURN_TIME = 0.4; // s for the hull to come round to a new heading
+const BANK_TIME = 0.5;
+/** handheld sway while flying, as a fraction of the screen (simplex noise, like drei's CameraShake) */
+const SWAY = 0.012;
+const noise = new SimplexNoise();
 
 /**
  * [stage, screen x, screen y, distance from the camera], x/y in -1..1 (+y up); |x| > 1 is off
@@ -43,25 +58,17 @@ const END_U = 5;
  */
 const FLIGHT_KEYS: readonly (readonly [number, number, number, number])[] = [
   [0.0, 0.5, 0.05, 5.7], // hero: top-down, nose to the lower left
-  [0.2, 0.1, -0.1, 5.2],
-  [0.45, -1.7, -0.3, 5.0], // off the left edge
-  [0.65, -0.7, 0.1, 5.6],
+  [0.45, -0.95, -0.25, 4.4], // one wide arc out to the left edge
   [0.89, 0.52, 0.18, 6.2], // about
-  [1.15, 1.2, 0.4, 5.6],
-  [1.4, 1.85, 0.2, 5.2], // off the right edge
-  [1.65, 0.6, -0.45, 5.0],
+  [1.4, 1.15, -0.2, 4.4], // out past the right edge
   [1.89, 0.52, 0.12, 6.2], // skills
-  [2.15, -0.5, -0.35, 5.2],
-  [2.45, -1.75, -0.1, 5.0], // off the left edge
-  [2.7, -0.6, 0.2, 5.6],
+  [2.4, -1.0, 0.15, 4.4], // left again
   [2.89, 0.52, 0.08, 6.2], // experience
-  [3.2, 0.9, 0.9, 5.8],
-  [3.5, 0.3, 1.55, 6.0], // up out of the top
+  [3.4, 0.75, 1.2, 5.4], // climbing out of the top
   [3.89, 0.5, 1.6, 6.0], // projects: parked above the top edge
-  [4.2, 0.35, 1.7, 6.3], // the hook
-  [4.45, -0.15, 1.35, 6.6],
-  [4.7, 0.0, 0.6, 7.0],
-  [5.0, 0.0, 0.0, 7.6], // contact: straight down to the centre of the screen
+  [4.45, -0.25, 1.25, 5.2], // the hook
+  [4.75, 0.0, 0.75, 4.6], // lined up: the last stretch is a straight drop
+  [5.0, 0.0, 0.05, 3.7], // contact: down to the centre and in close, filling the frame
 ];
 
 const vertexShader = /* glsl */ `
@@ -169,6 +176,7 @@ const _ray = new THREE.Vector3();
 const _fwd = new THREE.Vector3();
 const _look = new THREE.Vector3();
 const _bank = new THREE.Quaternion();
+const _pose = new THREE.Quaternion();
 const _v = new THREE.Vector3();
 const FACE_CAMERA = new THREE.Vector3(0, 0, 1);
 
@@ -207,6 +215,7 @@ function placeOnScreen(camera: THREE.Camera, x: number, y: number, depth: number
 /** a frame of landmark positions; reused, the stage posts a structured clone of it */
 const frame: AnchorSnapshot = {
   visible: false,
+  speed: 0,
   points: { cupola: [0, 0], wingL: [0, 0], wingR: [0, 0], tail: [0, 0] },
 };
 
@@ -218,9 +227,21 @@ const frame: AnchorSnapshot = {
  * ponytail: the first reveal compiles two shader programs on the spot; precompile them
  * (gl.compileAsync) if that hitch is ever visible. Callouts ignore occlusion by the hull.
  */
-function ShipModelImpl() {
+function ShipModelImpl({ calm }: { calm: boolean }) {
+  useEffect(() => {
+    cinema.calm = calm;
+  }, [calm]);
   const group = useRef<THREE.Group>(null);
-  const flight = useRef({ t: 0, stage: 0, bank: 0, dir: new THREE.Vector3(-1, -1, 0).normalize(), seeded: false });
+  const flight = useRef({
+    t: 0,
+    stage: 0,
+    bank: 0,
+    heading: 1,
+    dir: new THREE.Vector3(-1, -1, 0).normalize(),
+    quat: new THREE.Quaternion(),
+    seeded: false,
+    posed: false,
+  });
   const wasVisible = useRef(false);
   const { scene } = useGLTF(SHIP_URL, false, false);
 
@@ -337,6 +358,8 @@ function ShipModelImpl() {
       if (wasVisible.current) {
         wasVisible.current = false;
         frame.visible = false;
+        frame.speed = 0;
+        cinema.speed = 0;
         shipAnchors.emit(frame);
       }
       return;
@@ -350,42 +373,62 @@ function ShipModelImpl() {
       f.seeded = true;
     }
     f.t += dt * stageTheme.tempo;
-    // the ship is a function of the scroll alone; damping only gives it a little inertia
+    // the ship chases the scroll through a critically damped spring with a speed cap (see FOLLOW_*)
     const prevStage = f.stage;
-    f.stage = THREE.MathUtils.damp(f.stage, sceneSignals.stage, STAGE_SMOOTHING, dt);
+    damp(f, "stage", THREE.MathUtils.clamp(sceneSignals.stage, 0, END_U), FOLLOW_TIME, dt, FOLLOW_MAX_SPEED, undefined, 1e-4);
     const u = THREE.MathUtils.clamp(f.stage, 0, END_U);
+    const velocity = (f.stage - prevStage) / Math.max(dt, 1e-3); // sections per second, signed
+    const speed = Math.min(Math.abs(velocity) / FOLLOW_MAX_SPEED, 1);
+    if (Math.abs(velocity) > 0.02) f.heading = Math.sign(velocity); // scrolling back up turns the ship around
     const aspect = (state.camera as THREE.PerspectiveCamera).aspect;
 
     planPoint(u, _plan);
+    // a slow handheld sway while flying, none at rest
+    const sway = calm ? 0 : SWAY * speed * speed;
+    _plan.x += noise.noise(f.t * 0.45, 1) * sway;
+    _plan.y += noise.noise(f.t * 0.4, 7) * sway;
     // portrait screens: a smaller ship, perched in the upper part of the screen above the copy
     const portrait = THREE.MathUtils.clamp((1 - aspect) / 0.5, 0, 1); // 0 on landscape, 1 on a phone
     _plan.y += 0.5 * portrait;
     g.scale.setScalar(THREE.MathUtils.clamp(aspect / 1.3, 0.4, 1));
     placeOnScreen(state.camera, _plan.x, _plan.y, _plan.z, g.position);
 
-    // nose along the path's direction of travel (so scrolling back up retraces the flight)
-    const angle = pathAngle(u, aspect);
+    // nose along the direction of travel
+    const angle = pathAngle(u, aspect) + (f.heading < 0 ? Math.PI : 0);
     f.dir.set(Math.cos(angle), Math.sin(angle), 0);
 
-    // banking, as in three.js' rollercoaster example: heading change between the tangents either side
+    // banking, as in three.js' rollercoaster example: heading change between the tangents either
+    // side — here eased in, and levelled out again as the ship slows to a stop
     let headingChange = pathAngle(u + TURN_SPAN, aspect) - pathAngle(u - TURN_SPAN, aspect);
     if (headingChange > Math.PI) headingChange -= Math.PI * 2;
     if (headingChange < -Math.PI) headingChange += Math.PI * 2;
-    const target = -Math.atan(headingChange * BANK_GAIN) * BANK_SCALE;
-    f.bank += (target - f.bank) * (1 - Math.exp(-dt * BANK_SMOOTHING));
+    const roll = -Math.atan(headingChange * BANK_GAIN) * BANK_SCALE * f.heading * Math.min(speed * 2.5, 1);
+    damp(f, "bank", roll, BANK_TIME, dt);
 
     g.up.copy(FACE_CAMERA); // top of the hull toward the camera: a plan view, like a drawing sheet
     _bank.setFromAxisAngle(f.dir, f.bank);
     g.up.applyQuaternion(_bank);
     g.lookAt(_look.copy(g.position).add(f.dir)); // a non-camera Object3D points +Z at its target: nose first
     g.rotateX(0.2); // a touch of pitch so the hull keeps some depth
+    // follow-through: the hull comes round to that pose through a spring instead of snapping to it
+    _pose.copy(g.quaternion);
+    if (!f.posed) {
+      f.quat.copy(_pose);
+      f.posed = true;
+    }
+    dampQ(f.quat, _pose, TURN_TIME, dt);
+    g.quaternion.copy(f.quat);
 
-    // engine flames: longer while the page scrolls (thrust), a short flicker at rest
-    const speed = Math.abs(f.stage - prevStage) / Math.max(dt, 1e-3);
+    // engine flames: longer under thrust, a short flicker at rest
     const flame = g.userData.flame as FlameUniforms;
     flame.uTime.value = f.t;
-    flame.uLen.value = THREE.MathUtils.damp(flame.uLen.value, 0.55 + Math.min(speed, 1.5) * 0.9, 6, dt);
+    flame.uLen.value = THREE.MathUtils.damp(flame.uLen.value, 0.55 + speed * 1.2, 6, dt);
     flame.uFade.value = THREE.MathUtils.smoothstep(stageTheme.shape, 0.8, 1);
+
+    // cinema signals: how fast the flight is (0..1) and the roll, for the camera and the page overlay
+    damp(cinema, "speed", speed, 0.45, dt);
+    cinema.bank = f.bank;
+    frame.speed = cinema.speed;
 
     // landmarks → screen, for the page callouts
     g.updateMatrixWorld(true);

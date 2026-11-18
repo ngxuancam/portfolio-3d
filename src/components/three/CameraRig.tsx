@@ -5,6 +5,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { sceneSignals } from "@/lib/three/sceneSignals";
 import { stageTheme } from "@/lib/three/stageTheme";
+import { cinema } from "@/lib/three/cinema";
 import { createCameraPath, frameAt } from "@/lib/three/cameraPath";
 
 const WIDE_ASPECT = 1.1;
@@ -41,13 +42,16 @@ function CameraRigImpl() {
     position.x += s.pointerX * 0.18 * parallax;
     position.y += s.pointerY * 0.12 * parallax;
 
+    const k = stageTheme.shape * (cinema.calm ? 0 : 1); // cinematic extras: none in calm mode
+
     state.camera.position.copy(position);
     state.camera.lookAt(target);
+    state.camera.rotateZ(-cinema.bank * 0.2 * k); // the shot leans into the ship's bank
 
     // composition: slide the frustum so the subject sits left/centre/right of the copy
     const { width, height } = state.size;
     const camera = state.camera as THREE.PerspectiveCamera;
-    camera.fov = THREE.MathUtils.lerp(FOV_PORTRAIT, FOV_SHIP, stageTheme.shape); // setViewOffset re-projects
+    camera.fov = THREE.MathUtils.lerp(FOV_PORTRAIT, FOV_SHIP, stageTheme.shape) + cinema.speed * 6 * k; // widens at speed; setViewOffset re-projects
     camera.setViewOffset(width, height, -frameAt(path, s.stage) * width, 0, width, height);
   });
 

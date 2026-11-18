@@ -39,7 +39,7 @@ export function StageScene({ reducedMotion, skipIntro, burstCount, onReady }: St
       <StudioLighting />
       <CameraRig />
       <Suspense fallback={null}>
-        <ShipModel />
+        <ShipModel calm={reducedMotion} />
       </Suspense>
       <Suspense fallback={null}>
         <PortraitModel

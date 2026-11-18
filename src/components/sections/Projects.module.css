@@ -39,7 +39,7 @@
 
 .projects__card-index {
   font-family: var(--font-display);
-  font-style: italic;
+  font-style: var(--display-italic, italic);
   font-size: 1.05rem;
   letter-spacing: 0.04em;
   color: var(--color-accent-ink);
@@ -76,7 +76,7 @@
   position: relative;
   z-index: 1;
   font-family: var(--font-display);
-  font-style: italic;
+  font-style: var(--display-italic, italic);
   font-size: clamp(5rem, 10vw, 7.5rem);
   line-height: 1;
   color: var(--color-on-primary);
@@ -109,7 +109,7 @@
   padding: 0.8rem 1rem;
   border-left: 1px solid var(--color-accent);
   font-family: var(--font-display);
-  font-style: italic;
+  font-style: var(--display-italic, italic);
   font-size: 1.15rem;
   color: var(--color-text);
 }

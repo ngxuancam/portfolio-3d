@@ -21,7 +21,7 @@
 
 .skills__card-index {
   font-family: var(--font-display);
-  font-style: italic;
+  font-style: var(--display-italic, italic);
   font-size: 1.1rem;
   color: var(--color-accent-ink);
 }
@@ -89,8 +89,8 @@
 
 .skills__marquee-item {
   font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 400;
+  font-style: var(--display-italic, italic);
+  font-weight: var(--display-weight, 400);
   font-size: clamp(2.4rem, 5.5vw, 4.5rem);
   white-space: nowrap;
   /* brass-deep clears 3:1 for large text while still reading as a quiet echo */

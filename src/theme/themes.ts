@@ -170,11 +170,63 @@ const blueprint: Theme = {
   og: { bg: "#143a8c", text: "#f2f7ff", label: "#a9d6ff", sub: "#c3d5f7", footer: "#d4e9ff", rule: "#a9d6ff" },
 };
 
-export const themes = { "quiet-luxury": quietLuxury, blueprint } as const;
+const lab: Theme = {
+  id: "lab",
+  name: "Lab",
+  scheme: "dark",
+  // a lit room at night: near-black concrete, bone-white type, one amber signal colour
+  colors: {
+    bg: "#07080a",
+    surface: "#0f1114",
+    text: "#ecebe6",
+    textMuted: "#a3a5a8",
+    textFaint: "#6c6f73",
+    primary: "#f2efe7",
+    primaryHover: "#ffffff",
+    onPrimary: "#07080a",
+    accent: "#ffb23e",
+    accentDeep: "#d98e1e",
+    accentInk: "#ffc566",
+  },
+  line: "#1e2125",
+  loupe: true,
+  grain: 0.4,
+  sheet: 0,
+  // instrument-quick: a hard expo-out, everything a touch faster
+  motion: { ease: "cubic-bezier(0.19, 1, 0.22, 1)", time: 0.85, gsapEase: "expo.out", gsapDuration: 0.8, slideBlur: 10 },
+  css: {
+    "--font-display": "var(--font-inter), Inter, system-ui, sans-serif",
+    "--font-script": "var(--font-mono), ui-monospace, Consolas, monospace",
+    "--display-weight": "200",
+    "--display-italic": "normal",
+    "--tracking-display": "-0.03em",
+    "--radius-lg": "4px",
+    "--radius-pill": "2px",
+  },
+  swatches: { rust: "#ff7a3d", primary: "#2a2d33", ink: "#15171b", brass: "#ffb23e", wine: "#3a1e22" },
+  stage: {
+    shape: 0,
+    tempo: 1,
+    morph: 1.6,
+    colors: {
+      edge: "#ffb23e", rimA: "#ffd08a", rimB: "#5ec8ff",
+      inkA: "#ffcf7a", // amber: petal tips, stamen
+      inkB: "#ff6a3d", // ember: petal heart
+      inkC: "#e9edf2", // bone white: inner ring
+      inkD: "#3f6b55", // dark green: stem, leaves
+      glow: "#ffe2a8",
+      sky: "#8fa3b8", ground: "#0b0c0e", key: "#ffe9cf", fill: "#5b7ea8",
+      kickLeft: "#ffffff", kickRight: "#ffb23e", back: "#5ec8ff",
+    },
+  },
+  og: { bg: "#07080a", text: "#ecebe6", label: "#ffb23e", sub: "#a3a5a8", footer: "#ffc566", rule: "#ffb23e" },
+};
+
+export const themes = { lab, "quiet-luxury": quietLuxury, blueprint } as const;
 export type ThemeId = keyof typeof themes;
 
 /** Theme used for the server render and all build-time metadata (OG, manifest, viewport). */
-export const defaultThemeId: ThemeId = "quiet-luxury";
+export const defaultThemeId: ThemeId = "lab";
 export const defaultTheme: Theme = themes[defaultThemeId];
 
 const kebab = (s: string) => s.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);

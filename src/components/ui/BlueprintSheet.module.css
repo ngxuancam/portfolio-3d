@@ -178,3 +178,46 @@
     animation: none;
   }
 }
+
+/* Cinematic overlay: letterbox bars + vignette, driven by --cine (0..1, the ship's flight speed) */
+.cine {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  pointer-events: none;
+  opacity: var(--sheet, 0);
+  --bar: calc(var(--cine, 0) * 6vh);
+}
+
+.cine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    transparent 52%,
+    color-mix(in srgb, #00082a calc(var(--cine, 0) * 60%), transparent) 100%
+  );
+}
+
+.cine__bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--bar);
+  background: #020b2e;
+}
+
+.cine__bar--top {
+  top: 0;
+}
+
+.cine__bar--bottom {
+  bottom: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cine {
+    display: none;
+  }
+}

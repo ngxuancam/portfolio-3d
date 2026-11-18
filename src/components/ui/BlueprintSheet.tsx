@@ -25,6 +25,7 @@ const pct = (n: number) => n.toFixed(2);
  */
 export function BlueprintSheet() {
   const heroRef = useRef<HTMLDivElement>(null);
+  const cineRef = useRef<HTMLDivElement>(null);
   const leaderRefs = useRef<(SVGPathElement | null)[]>([]);
   const labelRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const dimRef = useRef<SVGPathElement>(null);
@@ -34,7 +35,8 @@ export function BlueprintSheet() {
     const hero = heroRef.current;
     if (!hero) return;
     const update = () => {
-      const { visible, points } = shipAnchors.current;
+      const { visible, points, speed } = shipAnchors.current;
+      cineRef.current?.style.setProperty("--cine", (visible ? speed : 0).toFixed(3));
       // callouts belong to the hero shot: they fade out over the first half of the hero scroll
       const fade = Math.max(0, 1 - sceneSignals.scroll / 0.5);
       hero.dataset.live = String(visible && fade > 0);
@@ -81,6 +83,12 @@ export function BlueprintSheet() {
   }, []);
 
   return (
+    <>
+      {/* cinematic letterbox + vignette, opened by the ship's flight speed */}
+      <div ref={cineRef} className={styles.cine} aria-hidden="true">
+        <div className={`${styles["cine__bar"]} ${styles["cine__bar--top"]}`} />
+        <div className={`${styles["cine__bar"]} ${styles["cine__bar--bottom"]}`} />
+      </div>
     <div className={styles.sheet} aria-hidden="true">
       <div className={styles["sheet__frame"]} />
       <div className={`${styles["sheet__ruler"]} ${styles["sheet__ruler--x"]}`} />
@@ -127,5 +135,6 @@ export function BlueprintSheet() {
         <div><dt>Scroll</dt><dd><SheetReadout field="scroll" /></dd></div>
       </dl>
     </div>
+    </>
   );
 }

@@ -5,6 +5,7 @@ import { sceneSignals } from "@/lib/three/sceneSignals";
 import { themeStore } from "@/theme/themeStore";
 import { shipAnchors } from "@/lib/three/shipAnchors";
 import { themes } from "@/theme/themes";
+import { loadProgress } from "@/lib/loading/loadProgress";
 import { STAGE_MAX_DPR, type StageMessage, type StageProps, type StageReply } from "./stageProps";
 import styles from "./SceneBackdrop.module.css";
 
@@ -53,7 +54,12 @@ export default function OffscreenStage({ reducedMotion, skipIntro, burstCount, o
     };
     worker.onmessage = (event: MessageEvent<StageReply>) => {
       const reply = event.data;
-      if (reply.type === "ready") onReady();
+      if (reply.type === "ready") {
+        // first frame drawn: model parsed, baked and shaders compiled
+        loadProgress.stage("build", 1);
+        loadProgress.markReady();
+        onReady();
+      } else if (reply.type === "progress") loadProgress.stage(reply.stage, reply.value);
       else if (reply.type === "anchors") shipAnchors.apply(reply.anchors);
       else fail();
     };

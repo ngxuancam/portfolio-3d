@@ -25,7 +25,7 @@
 
 .contact__eyebrow span {
   font-family: var(--font-display);
-  font-style: italic;
+  font-style: var(--display-italic, italic);
   font-size: 1.05rem;
   letter-spacing: 0.04em;
   text-transform: none;

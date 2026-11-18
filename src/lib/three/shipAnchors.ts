@@ -9,6 +9,8 @@ export type AnchorId = (typeof ANCHOR_IDS)[number];
 export interface AnchorSnapshot {
   /** the ship is fully plotted — callouts may show */
   visible: boolean;
+  /** flight speed 0..1, drives the letterbox bars and vignette */
+  speed: number;
   /** screen position per landmark, 0..1 of the viewport (origin top-left) */
   points: Record<AnchorId, [number, number]>;
 }
@@ -16,6 +18,7 @@ export interface AnchorSnapshot {
 class ShipAnchors {
   current: AnchorSnapshot = {
     visible: false,
+    speed: 0,
     points: { cupola: [0, 0], wingL: [0, 0], wingR: [0, 0], tail: [0, 0] },
   };
   /** set inside the stage worker: ship it to the page instead of applying locally */

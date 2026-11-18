@@ -13,3 +13,11 @@ travel. The roll into bends uses the technique of three.js' own roller-coaster e
 `bank = -atan(headingChange * k)` from the heading change between the tangents either side of the
 current point, applied by rotating `up` about the heading before `lookAt`. Re-implemented here;
 no code copied verbatim.
+
+## Smoothing
+- `damp` / `dampQ` from maath (pmndrs, MIT, https://github.com/pmndrs/maath): the critically damped
+  spring the ship uses to chase the scroll and to turn its hull.
+- Handheld sway: simplex noise scaled by intensity squared, the approach of drei's `CameraShake`
+  (pmndrs, MIT, https://github.com/pmndrs/drei), using three.js' `SimplexNoise`.
+- Timing follows "slow in and slow out", "arcs" and "follow through and overlapping action" from
+  Frank Thomas and Ollie Johnston, The Illusion of Life: Disney Animation (1981).

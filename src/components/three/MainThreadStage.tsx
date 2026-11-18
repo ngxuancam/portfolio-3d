@@ -7,6 +7,7 @@ import { StageScene } from "./StageScene";
 import { stageTheme } from "@/lib/three/stageTheme";
 import { themeStore } from "@/theme/themeStore";
 import { themes } from "@/theme/themes";
+import { loadProgress } from "@/lib/loading/loadProgress";
 import { STAGE_CAMERA, STAGE_GL, STAGE_MAX_DPR, type StageProps } from "./stageProps";
 import styles from "./SceneBackdrop.module.css";
 
@@ -23,6 +24,10 @@ export default function MainThreadStage({ reducedMotion, skipIntro, burstCount, 
     setReady(true);
     onReady();
   }, [onReady]);
+
+  // This path builds the scene on the main thread, after the page is already usable:
+  // the page loader must not wait for it (no-op if it has already finished).
+  useEffect(() => loadProgress.settleWithout3d(), []);
 
   // seed the live look, then follow runtime theme switches
   useEffect(() => {

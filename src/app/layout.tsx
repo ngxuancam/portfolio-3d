@@ -1,4 +1,4 @@
-import { Cormorant_Garamond, Inter, Pinyon_Script } from "next/font/google";
+import { Cormorant_Garamond, Inter, JetBrains_Mono, Pinyon_Script } from "next/font/google";
 import { createSiteMetadata, siteViewport } from "@/lib/seo/siteMetadata";
 import { SmoothScroll } from "@/components/motion/SmoothScroll";
 import { GlassLensManager } from "@/components/ui/GlassLensManager";
@@ -27,6 +27,12 @@ const pinyon = Pinyon_Script({
   display: "swap",
   // decorative tiny metadata only — never worth delaying first render for
   preload: false,
+});
+/** Lab theme: instrument labels, the loader counter and readouts. */
+const mono = JetBrains_Mono({
+  variable: "--font-mono",
+  subsets: ["latin"],
+  display: "swap",
 });
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
@@ -57,7 +63,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${cormorant.variable} ${pinyon.variable}`}
+      className={`${inter.variable} ${cormorant.variable} ${pinyon.variable} ${mono.variable}`}
       suppressHydrationWarning
     >
       <head>

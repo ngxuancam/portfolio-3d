@@ -36,7 +36,12 @@ export type StageMessage =
   | { type: "signals"; signals: SignalSnapshot }
   | { type: "theme"; look: StageLook };
 
-export type StageReply = { type: "ready" } | { type: "error"; message: string } | { type: "anchors"; anchors: AnchorSnapshot };
+export type StageReply =
+  | { type: "ready" }
+  | { type: "error"; message: string }
+  | { type: "anchors"; anchors: AnchorSnapshot }
+  /** download progress (0..1) of a stage asset, for the page loader (lib/loading/loadProgress) */
+  | { type: "progress"; stage: "model"; value: number };
 
 /** OffscreenCanvas can be handed to a worker (WebGL support is confirmed by the worker). */
 export function supportsOffscreenStage(): boolean {

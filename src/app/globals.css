@@ -98,7 +98,7 @@ h1,
 h2,
 h3 {
   font-family: var(--font-display);
-  font-weight: 500;
+  font-weight: var(--display-weight, 500);
   letter-spacing: var(--tracking-display);
   color: var(--color-text);
 }

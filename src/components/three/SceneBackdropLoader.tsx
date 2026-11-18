@@ -6,6 +6,7 @@ import { useReducedMotion } from "@/lib/animation/useReducedMotion";
 import { sceneSignals } from "@/lib/three/sceneSignals";
 import { smoothScrollStore } from "@/lib/animation/smoothScrollStore";
 import { POSTER_MEDIA } from "@/lib/three/stageMedia";
+import { loadProgress } from "@/lib/loading/loadProgress";
 
 import { supportsOffscreenStage } from "./stageProps";
 
@@ -62,7 +63,15 @@ export function SceneBackdropLoader() {
     if (onPoster) {
       const poster = document.querySelector<HTMLImageElement>("#top picture img");
       const ready = poster ? poster.decode().catch(() => undefined) : Promise.resolve();
+      // the poster stands in for the bust: the page loader lifts on it, not on the 3D
+      loadProgress.settleWithout3d(ready);
       void ready.then(() => !cancelled && start());
+    } else if (!supportsOffscreenStage()) {
+      // the main-thread fallback would build the scene on the UI thread after `load` —
+      // never hold the page loader for it
+      loadProgress.settleWithout3d();
+      if (document.readyState === "complete") start();
+      else window.addEventListener("load", start, { once: true });
     } else if (document.readyState === "complete") start();
     else window.addEventListener("load", start, { once: true });
 
