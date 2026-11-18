@@ -8,8 +8,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: resume.basics.headline,
     start_url: "/",
     display: "standalone",
-    background_color: "#fdfbf7",
-    theme_color: "#1b2430",
+    background_color: "#050607",
+    theme_color: "#050607",
     icons: [{ src: "/favicon.ico", sizes: "any", type: "image/x-icon" }],
   };
 }
