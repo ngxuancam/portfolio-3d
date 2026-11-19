@@ -51,7 +51,7 @@ The camera spirals around the ship from shot to shot. As it moves, the sun slide
 - A HUD header shows the active chapter and a `CH 02/06 · 34%` readout. Rails track progress on wide screens.
 
 **3D that stays smooth**
-- The ship (a CC0 model, see [`public/models/CREDITS.md`](public/models/CREDITS.md)) is drawn three times from one geometry: solid hull, additive hologram and point cloud. All three run the same sweep function, so they agree on the front to the pixel.
+- The ship ("Challenger" from Quaternius's CC0 Ultimate Spaceships pack, purple variant; see [`public/models/CREDITS.md`](public/models/CREDITS.md)) is drawn three times from one geometry: solid hull, additive hologram and point cloud. All three run the same sweep function, so they agree on the front to the pixel.
 - Every program is compiled with `compileAsync` before the reveal, so the first scroll never hitches. The thruster light lives outside the toggled group, so ignition never recompiles the lit materials.
 - The post chain renders into a half-float target: sanitize pass → bloom → chromatic aberration (desktop only) → neutral tone mapping → vignette. All effects merge into a single fullscreen pass.
 - NaN-safe by construction. `pow()` bases are clamped, normals use `safeNormalize`, every HDR output goes through `safeHdr`, and a sanitize pass stops a stray NaN before bloom can smear it across the frame.
@@ -99,7 +99,7 @@ Set `NEXT_PUBLIC_SITE_URL` before deploying so canonical URLs, the sitemap and J
 
 ## License
 
-[Apache License 2.0](LICENSE). The ship model is CC0; see [`public/models/CREDITS.md`](public/models/CREDITS.md).
+[Apache License 2.0](LICENSE). The ship model (Quaternius, "Challenger") is CC0; see [`public/models/CREDITS.md`](public/models/CREDITS.md).
 
 ---
 

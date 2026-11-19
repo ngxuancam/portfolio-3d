@@ -6,7 +6,7 @@
 
 export const SHIP_URL = "/models/ship.glb";
 /** shipped size of ship.glb; only used when the server hides Content-Length */
-export const SHIP_BYTES = 161_668;
+export const SHIP_BYTES = 206_856;
 
 const requests = new Map<string, Promise<ArrayBuffer | null>>();
 

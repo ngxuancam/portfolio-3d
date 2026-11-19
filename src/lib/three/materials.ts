@@ -24,11 +24,13 @@ const EDGE_INTENSITY = 7;
  * carry a faint cool rim so the dark hull separates from the dark room.
  */
 export function createHullMaterial(map: Texture | null) {
+  // with a texture the colour only tints it (a light grey keeps the atlas readable); there is no
+  // environment map in space, so a mostly-metal hull would read black: keep it semi-metallic
   const material = new MeshStandardMaterial({
-    color: new Color("#2a2e33"),
+    color: new Color(map ? "#c4c8d4" : "#2a2e33"),
     map,
-    metalness: 0.65,
-    roughness: 0.42,
+    metalness: map ? 0.35 : 0.65,
+    roughness: map ? 0.5 : 0.42,
   });
   const uniforms = {
     uEdgeColor: new Uniform(SIGNAL),

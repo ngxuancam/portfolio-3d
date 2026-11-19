@@ -3,8 +3,11 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MeshSurfaceSampler } from "three/examples/jsm/math/MeshSurfaceSampler.js";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { fetchModel, SHIP_BYTES, SHIP_URL } from "./fetchModel";
-/** the hull is rescaled so its long (z) axis spans this many world units */
-const SHIP_LENGTH = 6;
+/**
+ * The hull is rescaled so its largest horizontal extent (length or wingspan) spans this many world
+ * units: a wide-winged ship must still fit the free area right of the text column.
+ */
+const SHIP_SPAN = 5;
 
 export type ShipAsset = {
   geometry: BufferGeometry;
@@ -20,34 +23,50 @@ export type ShipAsset = {
 export type EngineMount = { x: number; y: number; z: number; radius: number };
 
 /**
- * Find the engines. The hull's −z end is the tail: it is the wide end (wings + pods) and carries
- * almost all the rear-facing faces, while +z tapers to the nose. The exhausts are the clusters of
- * rear-facing (normal.z < −0.7) faces in the last quarter, off the centreline — on this model a
- * mirrored pair at |x| ≈ 1.1. Measured, not hard-coded, so a re-export of the model still lines up.
+ * Find the engines. The hull's −z end is the tail. The exhaust is the big rear-facing block on the
+ * centreline (normal.z < −0.85, in the last fifth of the hull, |x| < 0.8): its area-weighted face
+ * plane gives the nozzle depth and its extent the size. The twin jets sit side by side inside it.
+ * Measured, not hard-coded, so a re-export of the model still lines up.
  */
 function findEngines(geometry: BufferGeometry, axisMin: number, axisLength: number): EngineMount {
   const pos = geometry.attributes.position;
-  const nrm = geometry.attributes.normal;
-  let n = 0;
-  let sx = 0;
-  let sy = 0;
-  let zMin = Infinity;
+  const a = new Vector3();
+  const b = new Vector3();
+  const c = new Vector3();
+  const ab = new Vector3();
+  const ac = new Vector3();
+  let area = 0;
+  let zSum = 0;
+  let xMax = 0;
   let yMin = Infinity;
   let yMax = -Infinity;
-  for (let i = 0; i < pos.count; i++) {
-    if (nrm.getZ(i) > -0.7) continue;
-    const z = pos.getZ(i);
-    const ax = Math.abs(pos.getX(i));
-    if (z > axisMin + axisLength * 0.25 || ax < 0.5 || ax > 1.8) continue;
-    n++;
-    sx += ax;
-    sy += pos.getY(i);
-    zMin = Math.min(zMin, z);
-    yMin = Math.min(yMin, pos.getY(i));
-    yMax = Math.max(yMax, pos.getY(i));
+  // non-indexed: every three vertices are one triangle
+  for (let i = 0; i + 2 < pos.count; i += 3) {
+    a.fromBufferAttribute(pos, i);
+    b.fromBufferAttribute(pos, i + 1);
+    c.fromBufferAttribute(pos, i + 2);
+    const n = ab.subVectors(b, a).cross(ac.subVectors(c, a));
+    const doubleArea = n.length();
+    if (doubleArea < 1e-6 || n.z / doubleArea > -0.85) continue;
+    const z = (a.z + b.z + c.z) / 3;
+    const x = Math.abs((a.x + b.x + c.x) / 3);
+    if (z > axisMin + axisLength * 0.2 || x > 0.8) continue;
+    area += doubleArea;
+    zSum += z * doubleArea;
+    for (const p of [a, b, c]) {
+      xMax = Math.max(xMax, Math.abs(p.x));
+      yMin = Math.min(yMin, p.y);
+      yMax = Math.max(yMax, p.y);
+    }
   }
-  if (n < 8) return { x: 1.1, y: 0.05, z: axisMin + 0.5, radius: 0.3 };
-  return { x: sx / n, y: sy / n, z: zMin, radius: Math.min(0.45, Math.max(0.18, (yMax - yMin) * 0.35)) };
+  if (area < 0.05) return { x: 0.3, y: 0, z: axisMin + 0.5, radius: 0.25 };
+  const half = Math.min(0.8, xMax);
+  return {
+    x: half / 2,
+    y: (yMin + yMax) / 2,
+    z: zSum / area,
+    radius: Math.min(half / 2, (yMax - yMin) / 2) * 0.85,
+  };
 }
 
 let parsed: Promise<ShipAsset | null> | null = null;
@@ -86,7 +105,7 @@ export function loadShip(onProgress: (fraction: number) => void): Promise<ShipAs
       const box = geometry.boundingBox!;
       const size = box.getSize(new Vector3());
       const centre = box.getCenter(new Vector3());
-      const scale = SHIP_LENGTH / size.z;
+      const scale = SHIP_SPAN / Math.max(size.x, size.z);
       geometry.translate(-centre.x, -centre.y, -centre.z);
       geometry.scale(scale, scale, scale);
       geometry.computeBoundingBox();
