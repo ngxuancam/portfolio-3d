@@ -16,8 +16,8 @@ wording or branding.
 | `--c-ink-3` | `#6d7074` | tertiary / metadata (large or decorative only) |
 | `--c-rule` | `rgb(233 231 225 / 0.12)` | 1px hairlines, frame rules |
 | `--c-rule-2` | `rgb(233 231 225 / 0.4)` | dashed button borders |
-| `--c-signal` | `#ff7a2f` | the ONE accent: build edge, active states, progress |
-| `--c-signal-2` | `#ffb27a` | accent text on void (AA) |
+| `--c-signal` | `#b46bff` | the ONE accent: build edge, active states, progress |
+| `--c-signal-2` | `#d7b4ff` | accent text on void (AA) |
 | `--c-shield` | `#bfefff` | shield / hologram cool light (3D only, rare in UI) |
 
 No gradients in UI except hairline fades. No rounded pills: corners are square (`--r: 2px` max).

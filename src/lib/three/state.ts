@@ -18,6 +18,8 @@ export const stage = {
   activity: 0,
   /** engine output: 0 off, 1 full burn, > 1 briefly during the ignition kick */
   thrust: 0,
+  /** 1 = normal burn; > 1 through the experience chapter (longer, wider jet) */
+  boost: 1,
   /** 1 at ignition, decaying: drives the flash, recoil and camera shake */
   kick: 0,
   /** 0.8..1.1 per-frame engine flicker */
@@ -54,6 +56,7 @@ export function resetStage() {
   stage.shield = 0;
   stage.activity = 0;
   stage.thrust = 0;
+  stage.boost = 1;
   stage.kick = 0;
   stage.shake = 0;
   stage.frontWeight = 0;

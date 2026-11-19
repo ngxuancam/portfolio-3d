@@ -13,12 +13,12 @@ import { NOISE_GLSL, SAFE_GLSL } from "./glsl";
 import { shared } from "./state";
 
 /*
- * Plasma thruster. Palette: white-hot at the throat → electric blue → violet in the tail of the
- * plume. Cool, high-energy colours read as "plasma drive" and stay distinct from the orange weld.
+ * Plasma thruster. Palette: pink-white at the throat → magenta → deep violet in the tail of the
+ * plume, the colour of a high-energy ion drive.
  */
-export const PLASMA_CORE = new Color("#f4fbff");
-export const PLASMA_HOT = new Color("#6fd0ff");
-export const PLASMA_TAIL = new Color("#7a5cff");
+export const PLASMA_CORE = new Color("#fff0ff");
+export const PLASMA_HOT = new Color("#d24bff");
+export const PLASMA_TAIL = new Color("#6a3cff");
 
 /**
  * An open cone along −z, nozzle at z = 0. Lots of length segments: the vertex shader necks the
@@ -160,7 +160,7 @@ export const createGlowGeometry = () => new PlaneGeometry(2, 2);
 /**
  * Ion sparks streaming backwards out of both nozzles. Every particle is a looping function of
  * time and its seeds (no CPU simulation): it leaves the throat, spreads, cools from white to
- * violet and fades.
+ * magenta and violet and fades.
  */
 export function createSparksGeometry(count: number) {
   const seeds = new Float32Array(count * 4);

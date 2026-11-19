@@ -6,7 +6,7 @@ import { MathUtils, PerspectiveCamera } from "three";
 import { signals } from "@/lib/scroll/signals";
 import type { Quality } from "@/lib/three/quality";
 import { shared, stage } from "@/lib/three/state";
-import { buildActivity, buildProgress, shieldProgress, sweepThreshold, thrustLevel } from "@/lib/three/timeline";
+import { buildActivity, buildProgress, shieldProgress, sweepThreshold, thrustBoost, thrustLevel } from "@/lib/three/timeline";
 
 /** scroll damping rate: wheel steps glide in ≈ 0.25 s */
 const SCROLL_DAMP = 4.5;
@@ -37,6 +37,7 @@ export function Director({ quality }: { quality: Quality }) {
       stage.activity = 0;
       stage.shield = 0;
       stage.thrust = STATIC_THRUST;
+      stage.boost = 1;
       stage.kick = 0;
       stage.flicker = 1;
       stage.shake = 0;
@@ -57,7 +58,8 @@ export function Director({ quality }: { quality: Quality }) {
       }
       stage.kick = c.ignited ? Math.exp(-(c.elapsed - c.ignitedAt) * 3.2) : 0;
       // the kick overshoots the burn: the engine catches hard, then settles
-      stage.thrust = level * (1 + 0.9 * stage.kick);
+      stage.boost = thrustBoost(stage.chapter);
+      stage.thrust = level * (1 + 0.9 * stage.kick) * (0.85 + 0.15 * stage.boost);
       // two incommensurate sines + a random jitter: never periodic enough to read as a loop
       stage.flicker = 0.9 + 0.07 * Math.sin(t * 53) * Math.sin(t * 31.7) + 0.06 * Math.random();
       stage.shake = 0.06 * stage.kick * level + 0.004 * level;

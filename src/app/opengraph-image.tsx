@@ -11,8 +11,8 @@ const INK = "#e9e7e1";
 const INK_2 = "#a5a7aa";
 const INK_3 = "#6d7074";
 const RULE = "rgba(233, 231, 225, 0.12)";
-const SIGNAL = "#ff7a2f";
-const SIGNAL_2 = "#ffb27a";
+const SIGNAL = "#b46bff";
+const SIGNAL_2 = "#d7b4ff";
 
 const INSET = 48;
 const MARK = 14;

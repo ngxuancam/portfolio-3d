@@ -15,8 +15,8 @@ import { shared } from "./state";
 
 /*
  * Deep space: a baked galactic band (equirect texture, rendered once on the GPU), three star
- * shells at different radii (real parallax as the camera travels), a camera-attached planet limb
- * and sun glare for composition. Everything respects the text column: a screen-space fade keeps
+ * shells at different radii (real parallax as the camera travels) and a camera-attached sun glare
+ * for composition. Everything respects the text column: a screen-space fade keeps
  * the left side dark on wide screens (`uLeftFade` 1) and is off on narrow ones (the scrim does it).
  */
 
@@ -49,7 +49,7 @@ float sideFade(float ndcX, float floorLevel) {
 
 /**
  * One shell of stars. Magnitudes follow a steep power law (most stars are barely there, a few are
- * bright) and colour temperature varies from blue-white to warm.
+ * bright) and colour varies from blue-white to a faint pink.
  */
 export function createStarShell(count: number, radius: number, depth: number) {
   const positions = new Float32Array(count * 3);
@@ -94,7 +94,7 @@ export function createStarMaterial(sizeScale: number) {
         float twinkle = 1.0 - 0.45 * (1.0 - m) * (0.5 + 0.5 * sin(uTime * (0.5 + aStar.y * 1.9) + aStar.y * 61.0));
         float side = sideFade(gl_Position.x / gl_Position.w, 0.3);
         gl_PointSize = (1.0 + 2.4 * m * m) * uSize * uDpr;
-        vec3 tint = mix(vec3(0.72, 0.82, 1.0), vec3(1.0, 0.86, 0.72), aStar.z);
+        vec3 tint = mix(vec3(0.74, 0.8, 1.0), vec3(1.0, 0.82, 0.96), aStar.z);
         vColor = tint * (0.07 + 2.1 * m * m * m + 0.25 * m) * twinkle * side;
       }
     `,
@@ -167,13 +167,14 @@ export function createSkyBakeMaterial() {
         // dark dust lanes threading along the band
         float lanes = smoothstep(0.05, 0.55, fbm(d * 7.0 + vec3(5.0, 1.0, 2.0)) + b * 2.0);
 
-        vec3 cold = vec3(0.016, 0.022, 0.045);
-        vec3 warm = vec3(0.05, 0.036, 0.026);
+        // violet band warming to a magenta-pink heart, like an emission nebula
+        vec3 cold = vec3(0.024, 0.016, 0.07);
+        vec3 warm = vec3(0.085, 0.022, 0.06);
         vec3 col = mix(cold, warm, core) * band * clouds * (1.0 - 0.75 * lanes * band);
-        col += vec3(0.008, 0.01, 0.02) * wideBand * clouds;
+        col += vec3(0.012, 0.008, 0.032) * wideBand * clouds;
         // a very faint cool nebular wisp away from the band, for depth
         float wisp = smoothstep(0.25, 0.85, fbm(d * 1.6 + vec3(11.0, 4.0, 9.0)));
-        col += vec3(0.012, 0.016, 0.04) * wisp * (1.0 - band);
+        col += vec3(0.02, 0.012, 0.05) * wisp * (1.0 - band);
         gl_FragColor = vec4(col, 1.0);
       }
     `,
@@ -215,64 +216,16 @@ export function createSkyMaterial(map: Texture) {
   });
 }
 
-// ───────────────────────────── planet + sun ─────────────────────────────
+// ───────────────────────────── sun ─────────────────────────────
 
-/**
- * A distant planet seen as a limb: dark night side (it occludes stars — that is what sells it as
- * a body), a thin sunlit crescent with faint cloud bands, and an atmosphere rim that wraps a
- * little past the terminator.
- */
-export function createPlanetMaterial() {
-  return new ShaderMaterial({
-    uniforms: {
-      uSunView: new Uniform(new Vector3(0, 0, 1)),
-      uAtmo: new Uniform(new Color("#7fc6ff")),
-      uLand: new Uniform(new Color("#3d4a57")),
-    },
-    vertexShader: /* glsl */ `
-      varying vec3 vNormalView;
-      varying vec3 vView;
-      varying vec3 vObj;
-      void main() {
-        vObj = normalize(position);
-        vNormalView = normalize(normalMatrix * normal);
-        vec4 mv = modelViewMatrix * vec4(position, 1.0);
-        vView = -mv.xyz;
-        gl_Position = projectionMatrix * mv;
-      }
-    `,
-    fragmentShader: /* glsl */ `
-      uniform vec3 uSunView;
-      uniform vec3 uAtmo;
-      uniform vec3 uLand;
-      varying vec3 vNormalView;
-      varying vec3 vView;
-      varying vec3 vObj;
-      ${NOISE_GLSL}
-      ${SAFE_GLSL}
-      void main() {
-        vec3 n = safeNormalize(vNormalView);
-        vec3 v = safeNormalize(vView);
-        float ndl = dot(n, uSunView);
-        float day = smoothstep(-0.04, 0.5, ndl);
-        float bands = 0.5 + 0.5 * stageNoise(vec3(vObj.y * 16.0, vObj.x * 2.0, vObj.z * 2.0));
-        float swirl = 0.5 + 0.5 * stageNoise(vObj * 7.0);
-        vec3 surface = uLand * (0.45 + 0.55 * bands) * (0.7 + 0.3 * swirl) * day * 0.5;
-        float rim = pow(clamp(1.0 - dot(n, v), 0.0, 1.0), 3.5);
-        float atmo = rim * smoothstep(-0.3, 0.35, ndl);
-        vec3 col = surface + uAtmo * atmo * 1.25;
-        gl_FragColor = vec4(safeHdr(col), 1.0);
-      }
-    `,
-  });
-}
-
-/** Sun glare off the frame's upper-right corner: soft halo, small hot core, faint streak. */
+/** Sun glare: soft halo, small hot core, faint streak; all three swell as the camera faces it. */
 export function createGlareMaterial() {
   return new ShaderMaterial({
     uniforms: {
       uIntensity: new Uniform(1),
-      uColor: new Uniform(new Color("#fff0dc")),
+      /** 0..1 how squarely the camera faces the sun: wider halo and a longer streak */
+      uVeil: new Uniform(0),
+      uColor: new Uniform(new Color("#f3e9ff")),
     },
     vertexShader: /* glsl */ `
       varying vec2 vP;
@@ -283,14 +236,15 @@ export function createGlareMaterial() {
     `,
     fragmentShader: /* glsl */ `
       uniform float uIntensity;
+      uniform float uVeil;
       uniform vec3 uColor;
       varying vec2 vP;
       ${SAFE_GLSL}
       void main() {
         float r = length(vP);
-        float halo = exp(-r * 4.2) * 0.22;
+        float halo = exp(-r * mix(4.2, 2.6, uVeil)) * (0.22 + 0.18 * uVeil);
         float core = exp(-r * 28.0) * 3.0;
-        float streak = exp(-abs(vP.y) * 90.0) * exp(-abs(vP.x) * 2.2) * 0.22;
+        float streak = exp(-abs(vP.y) * 90.0) * exp(-abs(vP.x) * mix(2.2, 1.1, uVeil)) * (0.22 + 0.3 * uVeil);
         float edge = 1.0 - smoothstep(0.65, 1.0, r);
         gl_FragColor = vec4(safeHdr(uColor * (halo + core + streak) * edge * uIntensity), 1.0);
       }

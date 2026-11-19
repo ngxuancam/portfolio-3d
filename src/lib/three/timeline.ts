@@ -40,6 +40,16 @@ export const thrustLevel = (chapter: number) =>
  */
 export const sweepThreshold = (build: number) => SWEEP_START + (SWEEP_END - SWEEP_START) * build;
 
+/**
+ * Extra burn on top of the steady thrust (1 = none): the jet grows longer and wider through
+ * "experience" (chapter 3), then eases back before the idle glow of "projects".
+ */
+export const thrustBoost = (chapter: number) =>
+  1 + 0.75 * smooth(range(chapter, 2.25, 3)) * (1 - smooth(range(chapter, 3.35, 4)));
+
+/** 0..1 how much the sky drifts past the coasting ship: in on the way into "projects" */
+export const spaceDrift = (chapter: number) => smooth(range(chapter, 3.4, 4));
+
 export const shieldProgress = (chapter: number) => smooth(range(chapter, 2.5, 4));
 
 export type CameraPose = { angle: number; radius: number; height: number; lookY: number };

@@ -13,7 +13,7 @@ import { Thruster } from "./Thruster";
 import { useDisposeOnUnmount } from "./useDisposeOnUnmount";
 
 const reportModel = (fraction: number) => progress.stage("model", fraction);
-const EDGE_LIGHT = new Color("#ff7a2f");
+const EDGE_LIGHT = new Color("#c95cff");
 const TAU = Math.PI * 2;
 /** resting pose: slightly elevated, a touch of pitch and bank */
 const BASE = { y: 0.25, pitch: 0.04, roll: -0.05 };

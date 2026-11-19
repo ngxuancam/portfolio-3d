@@ -11,8 +11,8 @@ import { FOG_GLSL, NOISE_GLSL, SAFE_GLSL, SWEEP_GLSL } from "./glsl";
 import { shared } from "./state";
 
 /** Palette (docs/DESIGN.md). Colors are authored in sRGB; three converts them to linear. */
-export const SIGNAL = new Color("#ff7a2f");
-export const SHIELD = new Color("#bfefff");
+export const SIGNAL = new Color("#c95cff");
+export const SHIELD = new Color("#b9c8ff");
 export const VOID = new Color("#050607");
 
 /** HDR multiplier on the burning edge: well above the bloom threshold (1.0) so only it blooms hard */
