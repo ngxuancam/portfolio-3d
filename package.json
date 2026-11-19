@@ -12,7 +12,6 @@
     "@react-three/drei": "^10.7.9",
     "@react-three/fiber": "^9.8.2",
     "@vercel/speed-insights": "^1.2.0",
-    "animejs": "^4.5.0",
     "next": "^16.4.5",
     "postprocessing": "^6.39.6",
     "react": "19.3.0",
@@ -20,7 +19,6 @@
     "three": "^0.187.0"
   },
   "devDependencies": {
-    "@gltf-transform/cli": "^4.5.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
