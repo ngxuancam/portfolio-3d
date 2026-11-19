@@ -8,7 +8,8 @@ import styles from "./Projects.module.css";
 export function Projects() {
   const { projects } = resume;
   const years = projects.map((p) => p.year);
-  const span = years.length ? `${Math.min(...years)}–${Math.max(...years)}` : "";
+  const [first, last] = [Math.min(...years), Math.max(...years)];
+  const span = !years.length ? "" : first === last ? `${first}` : `${first}–${last}`;
 
   return (
     <Chapter id="projects" index={4} label="Projects" title="Selected projects" readout={`${projects.length} builds · ${span}`}>
