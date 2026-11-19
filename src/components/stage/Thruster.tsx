@@ -69,15 +69,17 @@ export function Thruster({ engine, quality }: { engine: EngineMount; quality: Qu
     set(res.coreMaterial, "uFlicker", flicker);
     set(res.glowMaterial, "uPower", power * flicker);
     set(res.glowMaterial, "uFlash", stage.kick);
-    set(res.glowMaterial, "uSize", engine.radius * (1.6 + 1.4 * stage.kick));
+    set(res.glowMaterial, "uSize", engine.radius * (1.6 + 1.4 * stage.kick) * (1 + 0.5 * (stage.boost - 1)));
     set(res.sparksMaterial, "uPower", quality.reducedMotion ? 0 : power);
 
     // the jet lengthens with power and overshoots on the kick; idle is a short stub
-    const length = (0.28 + 0.72 * burn) * (1 + 0.25 * stage.kick) * (0.97 + 0.03 * flicker);
+    const length = (0.28 + 0.72 * burn) * (1 + 0.25 * stage.kick) * (0.97 + 0.03 * flicker) * stage.boost;
+    // the boost also opens the jet up: wider, but less than it lengthens, so it stays a jet
+    const width = 1 + 0.45 * (stage.boost - 1);
     group.traverse((child) => {
-      if (child.userData.plume) child.scale.z = length;
+      if (child.userData.plume) child.scale.set(width, width, length);
     });
-    if (light.current) light.current.intensity = 26 * power * flicker;
+    if (light.current) light.current.intensity = 26 * power * flicker * stage.boost;
   });
 
   const nozzles = [engine.x, -engine.x];

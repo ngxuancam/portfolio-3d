@@ -49,7 +49,7 @@ float sideFade(float ndcX, float floorLevel) {
 
 /**
  * One shell of stars. Magnitudes follow a steep power law (most stars are barely there, a few are
- * bright) and colour temperature varies from blue-white to warm.
+ * bright) and colour varies from blue-white to a faint pink.
  */
 export function createStarShell(count: number, radius: number, depth: number) {
   const positions = new Float32Array(count * 3);
@@ -94,7 +94,7 @@ export function createStarMaterial(sizeScale: number) {
         float twinkle = 1.0 - 0.45 * (1.0 - m) * (0.5 + 0.5 * sin(uTime * (0.5 + aStar.y * 1.9) + aStar.y * 61.0));
         float side = sideFade(gl_Position.x / gl_Position.w, 0.3);
         gl_PointSize = (1.0 + 2.4 * m * m) * uSize * uDpr;
-        vec3 tint = mix(vec3(0.72, 0.82, 1.0), vec3(1.0, 0.86, 0.72), aStar.z);
+        vec3 tint = mix(vec3(0.74, 0.8, 1.0), vec3(1.0, 0.82, 0.96), aStar.z);
         vColor = tint * (0.07 + 2.1 * m * m * m + 0.25 * m) * twinkle * side;
       }
     `,
@@ -167,13 +167,14 @@ export function createSkyBakeMaterial() {
         // dark dust lanes threading along the band
         float lanes = smoothstep(0.05, 0.55, fbm(d * 7.0 + vec3(5.0, 1.0, 2.0)) + b * 2.0);
 
-        vec3 cold = vec3(0.016, 0.022, 0.045);
-        vec3 warm = vec3(0.05, 0.036, 0.026);
+        // violet band warming to a magenta-pink heart, like an emission nebula
+        vec3 cold = vec3(0.024, 0.016, 0.07);
+        vec3 warm = vec3(0.085, 0.022, 0.06);
         vec3 col = mix(cold, warm, core) * band * clouds * (1.0 - 0.75 * lanes * band);
-        col += vec3(0.008, 0.01, 0.02) * wideBand * clouds;
+        col += vec3(0.012, 0.008, 0.032) * wideBand * clouds;
         // a very faint cool nebular wisp away from the band, for depth
         float wisp = smoothstep(0.25, 0.85, fbm(d * 1.6 + vec3(11.0, 4.0, 9.0)));
-        col += vec3(0.012, 0.016, 0.04) * wisp * (1.0 - band);
+        col += vec3(0.02, 0.012, 0.05) * wisp * (1.0 - band);
         gl_FragColor = vec4(col, 1.0);
       }
     `,
@@ -217,12 +218,14 @@ export function createSkyMaterial(map: Texture) {
 
 // ───────────────────────────── sun ─────────────────────────────
 
-/** Sun glare off the frame's upper-right corner: soft halo, small hot core, faint streak. */
+/** Sun glare: soft halo, small hot core, faint streak; all three swell as the camera faces it. */
 export function createGlareMaterial() {
   return new ShaderMaterial({
     uniforms: {
       uIntensity: new Uniform(1),
-      uColor: new Uniform(new Color("#fff0dc")),
+      /** 0..1 how squarely the camera faces the sun: wider halo and a longer streak */
+      uVeil: new Uniform(0),
+      uColor: new Uniform(new Color("#f3e9ff")),
     },
     vertexShader: /* glsl */ `
       varying vec2 vP;
@@ -233,14 +236,15 @@ export function createGlareMaterial() {
     `,
     fragmentShader: /* glsl */ `
       uniform float uIntensity;
+      uniform float uVeil;
       uniform vec3 uColor;
       varying vec2 vP;
       ${SAFE_GLSL}
       void main() {
         float r = length(vP);
-        float halo = exp(-r * 4.2) * 0.22;
+        float halo = exp(-r * mix(4.2, 2.6, uVeil)) * (0.22 + 0.18 * uVeil);
         float core = exp(-r * 28.0) * 3.0;
-        float streak = exp(-abs(vP.y) * 90.0) * exp(-abs(vP.x) * 2.2) * 0.22;
+        float streak = exp(-abs(vP.y) * 90.0) * exp(-abs(vP.x) * mix(2.2, 1.1, uVeil)) * (0.22 + 0.3 * uVeil);
         float edge = 1.0 - smoothstep(0.65, 1.0, r);
         gl_FragColor = vec4(safeHdr(uColor * (halo + core + streak) * edge * uIntensity), 1.0);
       }
