@@ -10,7 +10,6 @@ import {
   OrthographicCamera,
   PerspectiveCamera,
   PlaneGeometry,
-  ShaderMaterial,
   SphereGeometry,
   Vector3,
   WebGLRenderTarget,
@@ -18,7 +17,6 @@ import {
 import type { Quality } from "@/lib/three/quality";
 import {
   createGlareMaterial,
-  createPlanetMaterial,
   createSkyBakeMaterial,
   createSkyMaterial,
   createStarMaterial,
@@ -35,13 +33,12 @@ const SHELLS = [
   { radius: 430, depth: 80, count: [1200, 500], size: 0.85 },
 ] as const;
 const SKY_RADIUS = 900;
-/** camera-space distances: planet in front of every star shell, glare in front of the planet */
-const PLANET_DISTANCE = 125;
+/** camera-space distance of the sun glare: in front of every star shell */
 const GLARE_DISTANCE = 110;
 
 /**
  * Outer space. World-fixed star shells give true depth parallax as the camera spirals out; the
- * sky texture, planet and sun are composed relative to the camera so they always sit in the
+ * sky texture and sun are composed relative to the camera so they always sit in the
  * right-hand part of the frame and never behind the text.
  */
 export function Space({ quality }: { quality: Quality }) {
@@ -64,8 +61,6 @@ export function Space({ quality }: { quality: Quality }) {
       })),
       skyGeometry: new SphereGeometry(SKY_RADIUS, 48, 24),
       skyMaterial: createSkyMaterial(target.texture),
-      planetGeometry: new SphereGeometry(1, 96, 48),
-      planetMaterial: createPlanetMaterial(),
       glareGeometry: new PlaneGeometry(2, 2),
       glareMaterial: createGlareMaterial(),
     };
@@ -79,8 +74,6 @@ export function Space({ quality }: { quality: Quality }) {
   useDisposeOnUnmount(res.shells[2].material);
   useDisposeOnUnmount(res.skyGeometry);
   useDisposeOnUnmount(res.skyMaterial);
-  useDisposeOnUnmount(res.planetGeometry);
-  useDisposeOnUnmount(res.planetMaterial);
   useDisposeOnUnmount(res.glareGeometry);
   useDisposeOnUnmount(res.glareMaterial);
 
@@ -99,12 +92,11 @@ export function Space({ quality }: { quality: Quality }) {
 
   const sky = useRef<Mesh>(null);
   const attached = useRef<Group>(null);
-  const planet = useRef<Mesh>(null);
   const glare = useRef<Mesh>(null);
-  const scratch = useRef<{ sun: Vector3; toSun: Vector3; spin: number } | null>(null);
+  const scratch = useRef<{ sun: Vector3 } | null>(null);
 
-  useFrame((state, rawDelta) => {
-    const tmp = (scratch.current ??= { sun: new Vector3(), toSun: new Vector3(), spin: 0 });
+  useFrame((state) => {
+    const tmp = (scratch.current ??= { sun: new Vector3() });
     const camera = state.camera as PerspectiveCamera;
     const dpr = state.viewport.dpr;
     const narrow = stage.narrow;
@@ -119,7 +111,7 @@ export function Space({ quality }: { quality: Quality }) {
 
     sky.current?.position.copy(camera.position);
     const group = attached.current;
-    if (!group || !planet.current || !glare.current) return;
+    if (!group || !glare.current) return;
     group.position.copy(camera.position);
     group.quaternion.copy(camera.quaternion);
 
@@ -131,22 +123,11 @@ export function Space({ quality }: { quality: Quality }) {
       return target.set((ndcX - stage.viewShift) * halfH * aspect, ndcY * halfH, -distance);
     };
 
-    // the planet creeps up and inward as the camera pulls out: a slow sense of travel
-    const travel = Math.min(1, stage.chapter / 5);
-    place(planet.current.position, narrow ? 0.7 : 0.95 - 0.08 * travel, -1.32 + 0.1 * travel, PLANET_DISTANCE);
-    planet.current.scale.setScalar(PLANET_DISTANCE * tanHalf * 0.78);
-    if (!quality.reducedMotion) tmp.spin += Math.min(rawDelta, 0.1) * 0.004;
-    planet.current.rotation.set(0.35, tmp.spin, 0.2);
-
     place(glare.current.position, narrow ? 0.85 : 1.02, 0.9, GLARE_DISTANCE);
     glare.current.scale.setScalar(GLARE_DISTANCE * tanHalf * 0.85);
 
-    // sun direction (camera space → world) drives the key light and the planet's terminator
+    // sun direction (camera space → world) drives the key light
     tmp.sun.copy(glare.current.position).normalize();
-    // the sun is "at infinity" along that ray: light reaching the planet comes from far beyond it
-    tmp.toSun.copy(tmp.sun).multiplyScalar(4000).sub(planet.current.position).normalize();
-    const planetMaterial = planet.current.material as ShaderMaterial;
-    (planetMaterial.uniforms.uSunView.value as Vector3).copy(tmp.toSun);
     stage.sunDir.copy(tmp.sun).applyQuaternion(camera.quaternion);
   });
 
@@ -157,7 +138,6 @@ export function Space({ quality }: { quality: Quality }) {
         <points key={i} geometry={shell.geometry} material={shell.material} renderOrder={-20} frustumCulled={false} />
       ))}
       <group ref={attached}>
-        <mesh ref={planet} geometry={res.planetGeometry} material={res.planetMaterial} renderOrder={-10} />
         <mesh ref={glare} geometry={res.glareGeometry} material={res.glareMaterial} renderOrder={-5} frustumCulled={false} />
       </group>
     </>

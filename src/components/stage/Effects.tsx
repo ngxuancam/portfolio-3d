@@ -66,8 +66,6 @@ export function Effects({ quality }: { quality: Quality }) {
     return composer;
   }, [gl, scene, camera, quality.multisampling, quality.aberration, quality.low]);
 
-  // TEMP-DEBUG
-  if (typeof window !== "undefined") (window as unknown as Record<string, unknown>).__lab = { scene, camera, composer, gl };
   useDisposeOnUnmount(composer);
   useEffect(() => composer.setSize(size.width, size.height), [composer, size, dpr]);
 
