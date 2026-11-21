@@ -1,6 +1,8 @@
 import { ImageResponse } from "next/og";
 import { resume } from "@/content/resume";
 
+export const dynamic = "force-static";
+
 export const alt = `${resume.basics.name} — ${resume.basics.label}`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";

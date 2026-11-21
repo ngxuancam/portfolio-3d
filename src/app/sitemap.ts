@@ -2,6 +2,8 @@ import type { MetadataRoute } from "next";
 import { resume } from "@/content/resume";
 import { siteUrl } from "@/lib/seo/siteMetadata";
 
+export const dynamic = "force-static";
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = resume.updatedAt;
   return [

@@ -1,5 +1,4 @@
 import { Inter, JetBrains_Mono } from "next/font/google";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import { createSiteMetadata, siteViewport } from "@/lib/seo/siteMetadata";
 import "./globals.css";
 
@@ -34,8 +33,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body>
         {children}
-        {/* real-visitor Core Web Vitals, reported to the Vercel dashboard */}
-        <SpeedInsights />
       </body>
     </html>
   );

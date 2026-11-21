@@ -59,7 +59,7 @@ The camera spirals around the ship from shot to shot. As it moves, the sun slide
 - The frame loop stops while the tab is hidden. Reduced motion gets a static, fully built pose rendered on demand.
 
 **Built for search engines and AI agents**
-- The page is statically prerendered and ships a JSON-LD `@graph` (Person, WebSite, ProfilePage, projects), a `sitemap.xml` and a `robots.txt` that welcomes AI crawlers. It also serves [`/llms.txt`](src/app/llms.txt) and [`/resume.json`](src/app/resume.json) (JSON Resume), plus a generated Open Graph image.
+- The page is exported as plain static files (no server) and ships a JSON-LD `@graph` (Person, WebSite, ProfilePage, projects), a `sitemap.xml` and a `robots.txt` that welcomes AI crawlers. It also serves [`/llms.txt`](src/app/llms.txt) and [`/resume.json`](src/app/resume.json) (JSON Resume), plus a generated Open Graph image.
 - All of them are generated from one typed source: [`src/content/resume.ts`](src/content/resume.ts).
 
 **Design system**
@@ -92,10 +92,12 @@ src/
 ```bash
 npm install
 npm run dev      # http://localhost:3000
-npm run build    # every route prerenders as static
+npm run build    # static export: the whole site is written to out/
+npm run preview  # build, then serve out/ through Wrangler as Cloudflare will
+npm run deploy   # build, then deploy to Cloudflare Workers (run `npx wrangler login` once first)
 ```
 
-Set `NEXT_PUBLIC_SITE_URL` before deploying so canonical URLs, the sitemap and JSON-LD point at the real domain.
+The site is hosted on Cloudflare Workers as static assets ([`wrangler.jsonc`](wrangler.jsonc)); response headers live in [`public/_headers`](public/_headers). Canonical URLs default to `https://nguyenxuancam.com`; set `NEXT_PUBLIC_SITE_URL` at build time to point them elsewhere.
 
 ## License
 

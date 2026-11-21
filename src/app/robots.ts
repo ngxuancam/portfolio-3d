@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
 import { siteUrl } from "@/lib/seo/siteMetadata";
 
+export const dynamic = "force-static";
+
 /** AI/answer-engine crawlers are welcomed explicitly — a portfolio wants to be cited. */
 const AI_AGENTS = [
   "GPTBot",

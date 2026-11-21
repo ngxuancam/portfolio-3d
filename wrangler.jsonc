@@ -1,0 +1,19 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  // Static assets only: `next build` (output: "export") writes the whole site to out/.
+  "name": "portfolio",
+  "compatibility_date": "2026-11-05",
+  // keep portfolio.<account>.workers.dev and per-version preview URLs as test addresses
+  "workers_dev": true,
+  "preview_urls": true,
+  // Cloudflare creates the DNS records and certificates for these on deploy
+  "routes": [
+    { "pattern": "nguyenxuancam.com", "custom_domain": true },
+    { "pattern": "www.nguyenxuancam.com", "custom_domain": true }
+  ],
+  "assets": {
+    "directory": "./out",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}

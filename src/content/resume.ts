@@ -14,7 +14,7 @@ export const resume: Resume = {
       "Senior Software Engineer at FPT Software in Da Nang, with five years across automation, healthcare, e-commerce and education products. I work end to end, from clarifying high-level requirements with customers to design, implementation and test: Java and Spring Boot engines, React and React Native (Expo for Web) front ends, and full-stack work in VB.NET MVC and Laravel. I run multi-agent AI workflows with Claude Code across design, coding and testing, and outside work I build real-time 3D for the web.",
     email: "nguyenxuancamit@gmail.com",
     location: { city: "Da Nang", region: "Da Nang", countryCode: "VN" },
-    siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com",
+    siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "https://nguyenxuancam.com",
     availability: "Based in Da Nang · open to a conversation",
     profiles: [
       { network: "GitHub", username: "ngxuancam", url: "https://github.com/ngxuancam" },
